@@ -1,8 +1,11 @@
 #!/bin/bash
-year=2012
-month=01
-# day=01
 if [ -z "$1" ]
+then
+	echo "Please tell me which year to get."
+elif [ -z "$2" ]
+then
+	echo "Please tell me which month to get."
+elif [ -z "$3" ]
 then
 	echo "Please tell me where to store these files."
 else
@@ -12,9 +15,9 @@ else
 		do
 			if [ "$day" -lt "10" ]
 			then
-				wget -P "$1" -q http://data.githubarchive.org/"$year"-"$month"-0"$day"-"$hour".json.gz
+				wget -P "$3" http://data.githubarchive.org/"$1"-"$2"-0"$day"-"$hour".json.gz
 			else
-				wget -P "$1" -q http://data.githubarchive.org/"$year"-"$month"-"$day"-"$hour".json.gz
+				wget -P "$3" http://data.githubarchive.org/"$1"-"$2"-"$day"-"$hour".json.gz
 			fi
 		done
 	done
