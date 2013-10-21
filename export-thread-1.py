@@ -8,12 +8,10 @@ from pymongo import MongoClient
 
 
 DB_ADDRESS = 'localhost'
-DB_PORT = 30000
+DB_PORT = 27017
 THREAD_NUM = 15
 
-#client = MongoClient(DB_ADDRESS, DB_PORT)
-#db = client.testbig
-#collection = db['201309']
+client = MongoClient(DB_ADDRESS, DB_PORT)
 
 
 class MyThread(threading.Thread):
@@ -23,8 +21,7 @@ class MyThread(threading.Thread):
         self.basepath = basepath
         self.gzfile = gzfile
 
-        self.client = MongoClient(DB_ADDRESS, DB_PORT)
-        self.db = self.client.testbig
+        self.db = client.testbig
         self.collection = self.db['sep']
 
         self.file_cnt = 0

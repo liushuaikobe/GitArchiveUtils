@@ -13,12 +13,10 @@ DB_ADDRESS = 'localhost'
 DB_PORT = 27017
 
 client = MongoClient(DB_ADDRESS, DB_PORT)
-db = client.testbigfoo
-collection = db.bar
 
 
 def worker(record):
-    collection.insert(simplejson.loads(record))
+    client.testbigfoo.bar.insert(simplejson.loads(record))
 
 
 def main():
