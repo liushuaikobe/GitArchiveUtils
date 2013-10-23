@@ -49,7 +49,8 @@ def task(record):
         values (%s, %s, %s, %s)
         on duplicate key update
         country=values(country), lat=values(lat), lng=values(lng)
-    ''' % (regular_location['countryName'], regular_location['name'], regular_location['lat']), regular_location['lng']
+    ''' % (regular_location['countryName'], regular_location['name'], regular_location['lat'], regular_location['lng'])
+    print location_sql
     con.query(location_sql)
 
     # handle actor info

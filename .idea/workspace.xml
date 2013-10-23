@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="67759d59-1bf7-4e40-9abc-7106f8ab0aff" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/gitarchive.sql" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/export-mysql.py" afterPath="$PROJECT_DIR$/export-mysql.py" />
     </list>
     <ignored path="GitArchiveUtils.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -25,19 +25,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="export-mysql.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="export-mysql.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/export-mysql.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="113" column="29" selection-start="4267" selection-end="4267" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2205">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="gitarchive.sql" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/gitarchive.sql">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="10" column="19" selection-start="189" selection-end="189" vertical-scroll-proportion="0.21613833" vertical-offset="0" max-vertical-offset="694">
+            <state line="51" column="61" selection-start="1281" selection-end="1281" vertical-scroll-proportion="-1.1365639" vertical-offset="1539" max-vertical-offset="2220">
               <folding />
             </state>
           </provider>
@@ -46,7 +37,7 @@
       <file leaf-file-name="export-with-geo-parsing.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/export-with-geo-parsing.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="43" column="54" selection-start="1145" selection-end="1212" vertical-scroll-proportion="0.0" vertical-offset="645" max-vertical-offset="1830">
+            <state line="38" column="38" selection-start="908" selection-end="908" vertical-scroll-proportion="0.0" vertical-offset="390" max-vertical-offset="1830">
               <folding />
             </state>
           </provider>
@@ -96,8 +87,8 @@
         <option value="$PROJECT_DIR$/export-coroutine-3.py" />
         <option value="$PROJECT_DIR$/export-thread-2.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
-        <option value="$PROJECT_DIR$/export-mysql.py" />
         <option value="$PROJECT_DIR$/gitarchive.sql" />
+        <option value="$PROJECT_DIR$/export-mysql.py" />
       </list>
     </option>
   </component>
@@ -409,13 +400,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/export-with-geo-parsing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="43" column="54" selection-start="1145" selection-end="1212" vertical-scroll-proportion="0.0" vertical-offset="360" max-vertical-offset="1830">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/export-coroutine-3.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="44" column="36" selection-start="1162" selection-end="1194" vertical-scroll-proportion="0.0" vertical-offset="116" max-vertical-offset="810">
@@ -423,16 +407,23 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/export-mysql.py">
+    <entry file="file://$PROJECT_DIR$/gitarchive.sql">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="113" column="29" selection-start="4267" selection-end="4267" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2205">
+        <state line="9" column="19" selection-start="220" selection-end="220" vertical-scroll-proportion="-0.8587896" vertical-offset="731" max-vertical-offset="1425">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gitarchive.sql">
+    <entry file="file://$PROJECT_DIR$/export-with-geo-parsing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="19" selection-start="189" selection-end="189" vertical-scroll-proportion="0.21613833" vertical-offset="0" max-vertical-offset="694">
+        <state line="38" column="38" selection-start="908" selection-end="908" vertical-scroll-proportion="0.0" vertical-offset="390" max-vertical-offset="1830">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/export-mysql.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="51" column="61" selection-start="1281" selection-end="1281" vertical-scroll-proportion="-1.1365639" vertical-offset="1539" max-vertical-offset="2220">
           <folding />
         </state>
       </provider>
