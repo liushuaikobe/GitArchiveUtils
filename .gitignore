@@ -1,6 +1,6 @@
 *.py[cod]
 .DS_Store
-.idea/
+.idea/workspace.xml
 
 # C extensions
 *.so
