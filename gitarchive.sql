@@ -11,7 +11,7 @@
  Target Server Version : 50610
  File Encoding         : utf-8
 
- Date: 10/23/2013 22:47:11 PM
+ Date: 10/24/2013 22:30:30 PM
 */
 
 SET NAMES utf8;
@@ -22,7 +22,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 DROP TABLE IF EXISTS `Actor`;
 CREATE TABLE `Actor` (
-  `_id` int(11) NOT NULL,
+  `_id` int(11) NOT NULL AUTO_INCREMENT,
   `location` varchar(100) NOT NULL,
   `login` varchar(80) NOT NULL,
   `email` varchar(80) NOT NULL,
@@ -31,19 +31,20 @@ CREATE TABLE `Actor` (
   `blog` varchar(100) DEFAULT NULL,
   `regular_location` int(11) NOT NULL,
   PRIMARY KEY (`_id`),
-  KEY `location` (`regular_location`),
+  UNIQUE KEY `login` (`login`),
+  KEY `regular_location` (`regular_location`),
   CONSTRAINT `location` FOREIGN KEY (`regular_location`) REFERENCES `Location` (`_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=512 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 --  Table structure for `Event`
 -- ----------------------------
 DROP TABLE IF EXISTS `Event`;
 CREATE TABLE `Event` (
-  `_id` int(11) NOT NULL,
+  `_id` int(11) NOT NULL AUTO_INCREMENT,
   `url` varchar(150) NOT NULL,
-  `type` varchar(20) NOT NULL,
-  `created_at` time NOT NULL,
+  `type` varchar(50) NOT NULL,
+  `created_at` datetime NOT NULL,
   `actor` int(11) NOT NULL,
   `repo` int(11) NOT NULL,
   PRIMARY KEY (`_id`),
@@ -51,7 +52,7 @@ CREATE TABLE `Event` (
   KEY `repo` (`repo`),
   CONSTRAINT `actor` FOREIGN KEY (`actor`) REFERENCES `Actor` (`_id`),
   CONSTRAINT `repo` FOREIGN KEY (`repo`) REFERENCES `Repo` (`_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=352 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 --  Table structure for `Location`
@@ -63,15 +64,16 @@ CREATE TABLE `Location` (
   `name` varchar(80) NOT NULL,
   `lat` float NOT NULL,
   `lng` float NOT NULL,
-  PRIMARY KEY (`_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  PRIMARY KEY (`_id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=709 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 --  Table structure for `Repo`
 -- ----------------------------
 DROP TABLE IF EXISTS `Repo`;
 CREATE TABLE `Repo` (
-  `_id` int(11) NOT NULL,
+  `_id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(150) NOT NULL,
   `owner` varchar(150) NOT NULL,
   `language` varchar(50) NOT NULL,
@@ -84,6 +86,7 @@ CREATE TABLE `Repo` (
   `id` varchar(100) NOT NULL,
   `watchers` int(11) NOT NULL,
   `private` varchar(20) NOT NULL,
-  PRIMARY KEY (`_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  PRIMARY KEY (`_id`),
+  UNIQUE KEY `id` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=425 DEFAULT CHARSET=utf8;
 

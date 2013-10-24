@@ -1,5 +1,5 @@
 from gevent import monkey
-monkey.patch_all()
+monkey.patch_socket()
 import gevent
 import umysql
 import ujson
@@ -9,10 +9,8 @@ import re
 import sys
 import os
 import time
+import dateutil.parser
 
-
-con = umysql.Connection()
-con.connect('localhost', 3306, 'root', 'lskobe', 'gitarchive')
 
 pattern = re.compile(r'itemprop="homeLocation"><span class="octicon octicon-location"></span>(.+)</li>')
 
@@ -33,9 +31,10 @@ def task(record):
     # handle location info
     if 'location' not in attrs:
         # Maybe this guy add his location info recently.
-        location = get_location_from_page(actor)
-        if not location:
-            return
+        # location = get_location_from_page(actor)
+        # if not location:
+        #     return
+        return
     else:
         location = attrs['location']
 
@@ -44,43 +43,58 @@ def task(record):
     if not regular_location:
         return
 
-    location_sql = '''
-        insert into Location (country, name, lat, lng)
-        values (%s, %s, %s, %s)
-        on duplicate key update
-        country=values(country), lat=values(lat), lng=values(lng)
-    ''' % (regular_location['countryName'], regular_location['name'], regular_location['lat'], regular_location['lng'])
-    print location_sql
-    con.query(location_sql)
+    # A separate connection object per green thread or real thread
+    con = umysql.Connection()
+    con.connect('localhost', 3306, 'root', 'lskobe', 'gitarchive')
 
-    # handle actor info
-    actor_sql = '''
-        insert into Actor (location, login, email, type, name, blog, regular_location)
-        select '%s', '%s', '%s', '%s', '%s', '%s', _id
-        from Location
-        where name = '%s'
-        limit 1
-        on duplicate key update
-        location=values(location), email=values(email), type=values(type), name=values(name), blog=values(blog), regular_location=values(_id)
-    ''' % (attrs['location'], attrs['login'], attrs['email'], attrs['type'], attrs['name'], attrs.get('blog', ''), regular_location['name'])
-    con.query(actor_sql)
+    try:
+        location_sql = "\
+            insert into Location (country, name, lat, lng)\
+            values ('%s', '%s', '%s', '%s')\
+            on duplicate key update\
+            country=values(country), lat=values(lat), lng=values(lng)\
+        " % (regular_location['countryName'], regular_location['name'], regular_location['lat'], regular_location['lng'])
+        con.query(location_sql)
+    except(umysql.SQLError):
+        print 'FAIL:\n', location_sql
+
+    #handle actor info
+    try:
+        actor_sql = "\
+            insert into Actor (location, login, email, type, name, blog, regular_location)\
+            select '%s', '%s', '%s', '%s', '%s', '%s', _id\
+            from Location\
+            where name = '%s'\
+            limit 1\
+            on duplicate key update\
+            location=values(location), email=values(email), type=values(type), name=values(name), blog=values(blog), regular_location=values(_id)\
+        " % (attrs['location'], attrs['login'], attrs.get('email', ''), attrs['type'], attrs['name'], attrs.get('blog', ''), regular_location['name'])
+        con.query(actor_sql)
+    except(umysql.SQLError):
+        print 'FAIL:\n', actor_sql
 
     # handle repo info
-    repo = record['repository']
-    repo_sql = '''
-        insert into Repo (name, owner, language, url, description, forks, stars, create_at, push_at, id, watchers, private)
-        values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        on duplicate key update
-        name=values(name), owner=values(owner), language=values(language), url=values(url), description=values(description), forks=values(forks), stars=values(stars), create_at=values(create_at), push_at=values(push_at), watchers=values(watchers), private=values(private)
-    ''' % (repo['name'], repo['owner'], repo['language'], repo['url'], repo['description'], repo['forks'], repo['stargazers'], repo['created_at'], repo['pushed_at'], repo['id'], repo['watchers'], repo['private'])
-    con.query(repo_sql)
+    try:
+        repo = record['repository']
+        repo_sql = "\
+            insert into Repo (name, owner, language, url, description, forks, stars, create_at, push_at, id, watchers, private)\
+            values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')\
+            on duplicate key update\
+            name=values(name), owner=values(owner), language=values(language), url=values(url), description=values(description), forks=values(forks), stars=values(stars), create_at=values(create_at), push_at=values(push_at), watchers=values(watchers), private=values(private)\
+        " % (repo['name'], repo['owner'], repo.get('language', ''), repo['url'], repo.get('description', ''), repo['forks'], repo['stargazers'], parse_iso8601(repo['created_at']), parse_iso8601(repo['pushed_at']), repo['id'], repo['watchers'], repo['private'])
+        con.query(repo_sql)
+    except(umysql.SQLError):
+        print 'FAIL:\n', repo_sql
 
     # insert this event
-    event_sql = '''
-        insert into Event (url, type, created_at, actor, repo)
-        values(%s, %s, %s, (select _id from Actor where login=%s limit 1), (select _id from Repo where id=%s limit 1))
-    ''' % (record['url'], record['type'], record['created_at'], record['actor'], repo['id'])
-    con.query(event_sql)
+    try:
+        event_sql = "\
+            insert into Event (url, type, created_at, actor, repo)\
+            values('%s', '%s', '%s', (select _id from Actor where login='%s' limit 1), (select _id from Repo where id='%s' limit 1))\
+        " % (record['url'], record['type'], parse_iso8601(record['created_at']), record['actor'], repo['id'])
+        con.query(event_sql)
+    except(umysql.SQLError):
+        print 'FAIL:\n', event_sql
 
 
 def get_location_from_page(login):
@@ -116,24 +130,33 @@ def search_geo(location):
     cache[location.lower()] = regular_location
     return regular_location
 
+def parse_iso8601(t):
+    return dateutil.parser.parse(t).strftime('%Y-%m-%d %H:%M:%S')
 
 def main():
     if len(sys.argv) < 2:
         print 'Give me the json file path.'
         sys.exit(1)
 
-    file_name_list = os.listdir(sys.argv[1])
     # Choose files ends with 'json.gz'
-    file_name_list = filter(lambda x: x.endswith('json.gz'), file_name_list)
+    file_name_list = filter(lambda x: x.endswith('json.gz'), os.listdir(sys.argv[1]))
     total_num = len(file_name_list)
     print 'total: ', total_num
 
     start = time.time()
 
+    greenlet_num = 90
+
     for file_name in file_name_list:
-        with open(os.path.join(sys.argv[1],file_name), 'r') as f:
-            jobs = [gevent.spawn(task, line) for line in gzip.GzipFile(fileobj=f)]
-            gevent.joinall(jobs)
+        with open(os.path.join(sys.argv[1], file_name), 'r') as f:
+            all_lines = [line for line in gzip.GzipFile(fileobj=f)]
+            while len(all_lines) >= greenlet_num:
+                jobs = [gevent.spawn(task, line) for line in all_lines[:greenlet_num]]
+                gevent.joinall(jobs)
+                del all_lines[:greenlet_num]
+            if all_lines:
+                jobs = [gevent.spawn(task, line) for line in all_lines]
+                gevent.joinall(jobs)
 
     end = time.time()
     print 'total time:', end - start
