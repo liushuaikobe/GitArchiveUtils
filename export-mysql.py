@@ -52,89 +52,68 @@ def task(record):
     con = umysql.Connection()
     con.connect('localhost', 3306, 'root', 'lskobe', 'gitarchive', True)
 
-    # build location_sql
-    safe_countryName = format_utf8(mysql_escape(regular_location['countryName']))
-    safe_name = format_utf8(mysql_escape(regular_location['name']))
-    safe_lat = format_utf8(regular_location['lat'])
-    sage_lng = format_utf8(regular_location['lng'])
+    safe_regular_location = _safe(regular_location['name'])
+    search_sql = "select count(*) from Location where name='%s'" % (safe_regular_location)
+    r = con.query(search_sql)
+    if r.rows[0][0] == 0:
+        insert_location_sql = "insert into Location (country, name, lat, lng) \
+                                values ('%s', '%s', %s, %s)" % \
+                                (_safe(regular_location['countryName']), safe_regular_location, _safe(regular_location['lat']), _safe(regular_location['lng']))
+        con.query(insert_location_sql)
+        print insert_location_sql
+    else:
+        update_location_sql = "update Location set country='%s', lat=%s, lng=%s" % \
+                                (_safe(regular_location['countryName']), _safe(regular_location['lat']), _safe(regular_location['lng']))
+        con.query(update_location_sql)
 
-    location_sql = ' '.join((
-            '''insert into Location (country, name, lat, lng)''',
-            '''values ('%s', '%s', '%s', '%s')''' % (safe_countryName, safe_name, safe_lat, sage_lng),
-            '''on duplicate key update''',
-            '''country=values(country), lat=values(lat), lng=values(lng);'''
-        ))
-    con.query('START TRANSACTION;')
-    con.query(location_sql)
-    con.query('COMMIT;')
+    safe_actor = _safe(attrs['login'])
+    search_location_sql = "select _id from Location where name='%s'" % safe_regular_location
+    r = con.query(search_location_sql)
+    _id = r.rows[0][0]
+    search_actor_sql = "select count(*) from Actor where login='%s'" % safe_actor
+    r = con.query(search_actor_sql)
+    if r.rows[0][0] == 0:
+        insert_actor_sql = "insert into Actor (location, login, email, name, blog, regular_location) \
+                                values ('%s', '%s', '%s', '%s', '%s', %s)" % \
+                                (_safe(attrs['location']), safe_actor, _safe(attrs.get('email', '')), _safe(attrs.get('name', '')), _safe(attrs.get('blog', '')), _id)
+        con.query(insert_actor_sql)
+    else:
+        update_actor_sql = "update Actor set location='%s', email='%s', name='%s', blog='%s', regular_location=%s " % \
+                                (_safe(attrs['location']), _safe(attrs.get('email', '')), _safe(attrs.get('name', '')), _safe(attrs.get('blog', '')), _id)
 
-    # build actor_sql
-    safe_location = format_utf8(attrs['location'])
-    safe_login = format_utf8(attrs['login'])
-    safe_email = format_utf8(attrs.get('email', ''))
-    safe_type = format_utf8(attrs['type'])
-    safe_name = format_utf8(attrs.get('name', ''))
-    safe_blog = format_utf8(attrs.get('blog', ''))
-    safe_regular_location = format_utf8(regular_location['name'])
-        
-    actor_sql = ' '.join((
-            '''insert into Actor (location, login, email, type, name, blog, regular_location)''',
-            '''select '%s', '%s', '%s', '%s', '%s', '%s', _id''' % (safe_location, safe_login, safe_email, safe_type, safe_name, safe_blog),
-            '''from Location''',
-            '''where name = '%s' ''' % (safe_regular_location),
-            '''limit 1''',
-            '''on duplicate key update''',
-            '''location=values(location), email=values(email), type=values(type), name=values(name), blog=values(blog), regular_location=values(regular_location);'''
-        ))
-    con.query('START TRANSACTION;')
-    con.query(actor_sql)
-    con.query('COMMIT;')
-
-    # build repo info
     repo = record['repository']
+    search_repo_sql = "select count(*) from Repo where id='%s'" % _safe(repo['id'])
+    r = con.query(search_repo_sql)
+    if r.rows[0][0] == 0:
+        insert_repo_sql = "insert into Repo (name, owner, language, url, description, forks, stars, create_at, push_at, id, watchers, private) \
+                            values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % \
+                            (_safe(repo['name']), _safe(repo['owner']), _safe(repo.get('language', '')), _safe(repo['url']), _safe(repo.get('description', '')), 
+                                _safe(repo['forks']), _safe(repo['stargazers']), _safe(parse_iso8601(repo['created_at'])), 
+                                _safe(parse_iso8601(repo['pushed_at'])), _safe(repo['id']), _safe(repo['watchers']), _safe(repo['private']))
+        con.query(insert_repo_sql)
+    else:
+        update_repo_sql = "update Repo set name='%s', owner='%s', language='%s', url='%s', description='%s', forks='%s', stars='%s', created_at='%s', \
+                                pushed_at='%s', watchers='%s', private='%s'" % \
+                                (_safe(repo['name']), _safe(repo['owner']), _safe(repo.get('language', '')), _safe(repo['url']), _safe(repo.get('description', '')), 
+                                _safe(repo['forks']), _safe(repo['stargazers']), _safe(parse_iso8601(repo['created_at'])),
+                                _safe(parse_iso8601(repo['pushed_at'])), _safe(repo['watchers']), _safe(repo['private']))
+        con.query(update_repo_sql)
 
-    safe_name = format_utf8(repo['name'])
-    safe_owner = format_utf8(repo['owner'])
-    safe_language = format_utf8(repo.get('language', ''))
-    safe_url = format_utf8(repo['url'])
-    safe_description = format_utf8(mysql_escape(repo.get('description', '')))
-    safe_forks = format_utf8(repo['forks'])
-    safe_stars = format_utf8(repo['stargazers'])
-    safe_created_at = format_utf8(parse_iso8601(repo['created_at']))
-    safe_pushed_at = format_utf8(parse_iso8601(repo['pushed_at']))
-    safe_id = format_utf8(repo['id'])
-    safe_watchers = format_utf8(repo['watchers'])
-    safe_private = format_utf8(repo['private'])
+    search_actor_sql = "select _id from Actor where login='%s'" % _safe(actor)
+    print search_actor_sql
+    r = con.query(search_sql)
+    actor_id = r.rows[0][0] 
 
-    repo_sql = ' '.join((
-            '''insert into Repo (name, owner, language, url, description, forks, stars, create_at, push_at, id, watchers, private)''',
-            '''values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')''' % (safe_name, safe_owner, safe_language, safe_url, safe_description, safe_forks, safe_stars, safe_created_at, safe_pushed_at, safe_id, safe_watchers, safe_private),
-            '''on duplicate key update''',
-            '''name=values(name), owner=values(owner), language=values(language), url=values(url), description=values(description), forks=values(forks), stars=values(stars), create_at=values(create_at), push_at=values(push_at), watchers=values(watchers), private=values(private);''',
-        ))
-    con.query('START TRANSACTION;')
-    con.query(repo_sql)
-    con.query('COMMIT;')
-
-    # build event_sql
-    safe_url = format_utf8(record['url'])
-    safe_type = format_utf8(record['type'])
-    safe_created_at = format_utf8(parse_iso8601(record['created_at']))
-    safe_id = format_utf8(repo['id'])
-    safe_actor = format_utf8(record['actor'])
-
-    event_sql = '\n'.join((
-            '''insert into Event (url, type, created_at, actor, repo)''',
-            '''select '%s', '%s', '%s', _id, (select _id from Repo where id='%s' limit 1)''' % (safe_url, safe_type, safe_created_at, safe_id),
-            '''from Actor where login='%s' limit 1;''' % (safe_actor),
-        ))
-    con.query('START TRANSACTION;')
-    con.query(event_sql)
-    con.query('COMMIT;')
-
-    # insert this event
-    # sql = ' '.join((location_sql, actor_sql, repo_sql, event_sql))
-    # con.query(sql)
+    search_repo_sql = "select _id from Repo where id='%s'" % _safe(repo['id'])
+    print search_repo_sql
+    r = con.query(search_sql)
+    repo_id = r.rows[0][0]
+    print actor_id, '=>', repo_id
+    insert_event_sql = "insert into Event (url, type, created_at, actor, repo) \
+                            values ('%s', '%s', '%s', %s, %s)" % \
+                            (_safe(record['url']), _safe(record['type']), _safe(parse_iso8601(record['created_at'])), actor_id, repo_id)
+    print insert_event_sql
+    con.query(insert_event_sql)
 
 
 def get_location_from_page(login):
@@ -175,12 +154,19 @@ def parse_iso8601(t):
 
 
 def mysql_escape(s):
-    s = format_utf8(s)
     return MySQLdb.escape_string(s)
 
 
 def format_utf8(s):
     return s.encode('utf-8') if isinstance(s, unicode) else s
+
+def _safe(s):
+    if isinstance(s, unicode):
+        return mysql_escape(format_utf8(s))
+    elif isinstance(s, str):
+         return mysql_escape(s)
+    else:
+        return s
 
 
 def insert_parallel(file_name_list, greenlet_num=90):
@@ -218,8 +204,8 @@ def output_observe_data(t):
 
 def main():
     if len(sys.argv) < 2:
-        print 'Give me the json file path.'
-        sys.exit(1)
+       print 'Give me the json file path.'
+       sys.exit(1)
 
     # Choose files ends with 'json.gz'
     file_name_list = filter(lambda x: x.endswith('json.gz'), os.listdir(sys.argv[1]))
@@ -227,8 +213,8 @@ def main():
     start = time.time()
 
     # task begins
-    # insert_serial(file_name_list)
-    insert_parallel(file_name_list)
+    insert_serial(file_name_list)
+    # insert_parallel(file_name_list)
 
     end = time.time()
     output_observe_data(end - start)

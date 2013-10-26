@@ -11,7 +11,7 @@
  Target Server Version : 50610
  File Encoding         : utf-8
 
- Date: 10/24/2013 22:30:30 PM
+ Date: 10/26/2013 19:11:59 PM
 */
 
 SET NAMES utf8;
@@ -34,7 +34,7 @@ CREATE TABLE `Actor` (
   UNIQUE KEY `login` (`login`),
   KEY `regular_location` (`regular_location`),
   CONSTRAINT `location` FOREIGN KEY (`regular_location`) REFERENCES `Location` (`_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=512 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1547 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 --  Table structure for `Event`
@@ -52,7 +52,7 @@ CREATE TABLE `Event` (
   KEY `repo` (`repo`),
   CONSTRAINT `actor` FOREIGN KEY (`actor`) REFERENCES `Actor` (`_id`),
   CONSTRAINT `repo` FOREIGN KEY (`repo`) REFERENCES `Repo` (`_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=352 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1518 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 --  Table structure for `Location`
@@ -66,7 +66,7 @@ CREATE TABLE `Location` (
   `lng` float NOT NULL,
   PRIMARY KEY (`_id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=709 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1574 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 --  Table structure for `Repo`
@@ -81,12 +81,12 @@ CREATE TABLE `Repo` (
   `description` text NOT NULL,
   `forks` int(11) NOT NULL,
   `stars` int(11) NOT NULL,
-  `create_at` time NOT NULL,
-  `push_at` time NOT NULL,
+  `create_at` datetime NOT NULL,
+  `push_at` datetime NOT NULL,
   `id` varchar(100) NOT NULL,
   `watchers` int(11) NOT NULL,
   `private` varchar(20) NOT NULL,
   PRIMARY KEY (`_id`),
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=425 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1556 DEFAULT CHARSET=utf8;
 
