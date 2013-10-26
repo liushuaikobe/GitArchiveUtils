@@ -50,7 +50,7 @@ def task(record):
 
     # A separate connection object per green thread or real thread
     con = umysql.Connection()
-    con.connect('localhost', 3306, 'root', 'lskobe', 'gitarchive')
+    con.connect('localhost', 3306, 'root', 'lskobe', 'gitarchive', True)
 
     try:
         safe_countryName = format_utf8(mysql_escape(regular_location['countryName']))
@@ -58,12 +58,12 @@ def task(record):
         safe_lat = format_utf8(regular_location['lat'])
         sage_lng = format_utf8(regular_location['lng'])
 
-        location_sql = '\
-            insert into Location (country, name, lat, lng)\
-            values ("%s", "%s", "%s", "%s")\
-            on duplicate key update\
-            country=values(country), lat=values(lat), lng=values(lng)\
-        ' % (safe_countryName, safe_name, safe_lat, sage_lng)
+        location_sql = '''
+            insert into Location (country, name, lat, lng)
+            values ("%s", "%s", "%s", "%s")
+            on duplicate key update
+            country=values(country), lat=values(lat), lng=values(lng);
+        ''' % (safe_countryName, safe_name, safe_lat, sage_lng)
         con.query(location_sql)
     except umysql.SQLError, e:
         print 'FAIL:\n', location_sql
@@ -72,15 +72,15 @@ def task(record):
 
     #handle actor info
     try:
-        actor_sql = '\
-            insert into Actor (location, login, email, type, name, blog, regular_location)\
-            select "%s", "%s", "%s", "%s", "%s", "%s", _id\
-            from Location\
-            where name = "%s"\
-            limit 1\
-            on duplicate key update\
-            location=values(location), email=values(email), type=values(type), name=values(name), blog=values(blog), regular_location=values(_id)\
-        ' % (attrs['location'], attrs['login'], attrs.get('email', ''), attrs['type'], attrs.get('name', ''), attrs.get('blog', ''), regular_location['name'])
+        actor_sql = '''
+            insert into Actor (location, login, email, type, name, blog, regular_location)
+            select "%s", "%s", "%s", "%s", "%s", "%s", _id
+            from Location
+            where name = "%s"
+            limit 1
+            on duplicate key update
+            location=values(location), email=values(email), type=values(type), name=values(name), blog=values(blog), regular_location=values(regular_location);
+        ''' % (attrs['location'], attrs['login'], attrs.get('email', ''), attrs['type'], attrs.get('name', ''), attrs.get('blog', ''), regular_location['name'])
         con.query(actor_sql)
     except umysql.SQLError, e:
         print 'FAIL:\n', actor_sql
@@ -111,12 +111,12 @@ def task(record):
         safe_watchers = format_utf8(repo['watchers'])
         safe_private = format_utf8(repo['private'])
 
-        repo_sql = "\
-            insert into Repo (name, owner, language, url, description, forks, stars, create_at, push_at, id, watchers, private)\
-            values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')\
-            on duplicate key update\
-            name=values(name), owner=values(owner), language=values(language), url=values(url), description=values(description), forks=values(forks), stars=values(stars), create_at=values(create_at), push_at=values(push_at), watchers=values(watchers), private=values(private)\
-        " % (safe_name, safe_owner, safe_language, safe_url, safe_description, safe_forks, safe_stars, safe_created_at, safe_pushed_at, safe_id, safe_watchers, safe_private)
+        repo_sql = '''
+            insert into Repo (name, owner, language, url, description, forks, stars, create_at, push_at, id, watchers, private)
+            values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
+            on duplicate key update
+            name=values(name), owner=values(owner), language=values(language), url=values(url), description=values(description), forks=values(forks), stars=values(stars), create_at=values(create_at), push_at=values(push_at), watchers=values(watchers), private=values(private);
+        ''' % (safe_name, safe_owner, safe_language, safe_url, safe_description, safe_forks, safe_stars, safe_created_at, safe_pushed_at, safe_id, safe_watchers, safe_private)
         con.query(repo_sql)
     except umysql.SQLError, e:
         print 'FAIL:\n', repo_sql
@@ -132,11 +132,11 @@ def task(record):
         safe_id = format_utf8(repo['id'])
         safe_actor = format_utf8(record['actor'])
 
-        event_sql = "\
-            insert into Event (url, type, created_at, actor, repo)\
-            select '%s', '%s', '%s', _id, (select _id from Repo where id='%s' limit 1)\
-            from Actor where login='%s' limit 1\
-        " % (safe_url, safe_type, safe_created_at, safe_id, safe_actor)
+        event_sql = '''
+            insert into Event (url, type, created_at, actor, repo)
+            select '%s', '%s', '%s', _id, (select _id from Repo where id='%s' limit 1)
+            from Actor where login='%s' limit 1;
+        ''' % (safe_url, safe_type, safe_created_at, safe_id, safe_actor)
         con.query(event_sql)
     except umysql.SQLError, e:
         print 'FAIL:\n', event_sql
@@ -191,9 +191,11 @@ def format_utf8(s):
 
 
 def insert_parallel(file_name_list, greenlet_num=90):
+    print 'Total Json Files:', len(file_name_list)
     for file_name in file_name_list:
         with open(os.path.join(sys.argv[1], file_name), 'r') as f:
             all_lines = [line for line in gzip.GzipFile(fileobj=f)]
+            print 'Processing {0}, {1} lines.'.format(file_name, str(len(all_lines)))
             while len(all_lines) >= greenlet_num:
                 jobs = [gevent.spawn(task, line) for line in all_lines[:greenlet_num]]
                 gevent.joinall(jobs)
@@ -201,13 +203,25 @@ def insert_parallel(file_name_list, greenlet_num=90):
             if all_lines:
                 jobs = [gevent.spawn(task, line) for line in all_lines]
                 gevent.joinall(jobs)
+        print 'Finish =>', file_name
 
 def insert_serial(file_name_list):
+    print 'Total Json Files:', len(file_name_list)
     for file_name in file_name_list:
         with open(os.path.join(sys.argv[1], file_name), 'r') as f:
             all_lines = [line for line in gzip.GzipFile(fileobj=f)]
+            print 'Processing {0}, {1} lines.'.format(file_name, str(len(all_lines)))
             for line in all_lines:
                 task(line)
+        print 'Finish =>', file_name
+
+def output_observe_data(t):
+    print '*' * 80
+    print 'Total Time(s):', t
+    print 'Cache Num:', len(cache)
+    print 'Total Internet Requests:', search_times
+    print 'Cache Hit:', cache_hit
+    print '*' * 80
 
 def main():
     if len(sys.argv) < 2:
@@ -216,16 +230,15 @@ def main():
 
     # Choose files ends with 'json.gz'
     file_name_list = filter(lambda x: x.endswith('json.gz'), os.listdir(sys.argv[1]))
-    total_num = len(file_name_list)
-    print 'total: ', total_num
 
     start = time.time()
 
-
-    insert_serial(file_name_list)
+    # task begins
+    # insert_serial(file_name_list)
+    insert_parallel(file_name_list)
 
     end = time.time()
-    print 'total time:', end - start
+    output_observe_data(end - start)
 
 if __name__ == '__main__':
     main()
