@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- 
 from gevent import monkey
 monkey.patch_socket()
 import gevent
@@ -8,8 +9,10 @@ import requests
 import re
 import sys
 import os
+import traceback
 import time
 import dateutil.parser
+import MySQLdb
 
 
 pattern = re.compile(r'itemprop="homeLocation"><span class="octicon octicon-location"></span>(.+)</li>')
@@ -22,10 +25,12 @@ search_times = 0
 
 def task(record):
     record = ujson.loads(record)
-    actor = record['actor']
-    attrs = record.get("actor_attributes", {})
+    if record['type'] not in ['IssuesEvent', 'PullRequestEvent', 'PushEvent']:
+        return
+    actor = record.get('actor', '')
+    attrs = record.get('actor_attributes', {})
     # an anonymous event (like a gist event) or an organization event
-    if actor is None or attrs.get('type') != 'User':
+    if actor == '' or attrs.get('type') != 'User':
         return
 
     # handle location info
@@ -48,53 +53,95 @@ def task(record):
     con.connect('localhost', 3306, 'root', 'lskobe', 'gitarchive')
 
     try:
-        location_sql = "\
+        safe_countryName = format_utf8(mysql_escape(regular_location['countryName']))
+        safe_name = format_utf8(mysql_escape(regular_location['name']))
+        safe_lat = format_utf8(regular_location['lat'])
+        sage_lng = format_utf8(regular_location['lng'])
+
+        location_sql = '\
             insert into Location (country, name, lat, lng)\
-            values ('%s', '%s', '%s', '%s')\
+            values ("%s", "%s", "%s", "%s")\
             on duplicate key update\
             country=values(country), lat=values(lat), lng=values(lng)\
-        " % (regular_location['countryName'], regular_location['name'], regular_location['lat'], regular_location['lng'])
+        ' % (safe_countryName, safe_name, safe_lat, sage_lng)
         con.query(location_sql)
-    except(umysql.SQLError):
+    except umysql.SQLError, e:
         print 'FAIL:\n', location_sql
+        print e
+        print traceback.format_exc()
 
     #handle actor info
     try:
-        actor_sql = "\
+        actor_sql = '\
             insert into Actor (location, login, email, type, name, blog, regular_location)\
-            select '%s', '%s', '%s', '%s', '%s', '%s', _id\
+            select "%s", "%s", "%s", "%s", "%s", "%s", _id\
             from Location\
-            where name = '%s'\
+            where name = "%s"\
             limit 1\
             on duplicate key update\
             location=values(location), email=values(email), type=values(type), name=values(name), blog=values(blog), regular_location=values(_id)\
-        " % (attrs['location'], attrs['login'], attrs.get('email', ''), attrs['type'], attrs['name'], attrs.get('blog', ''), regular_location['name'])
+        ' % (attrs['location'], attrs['login'], attrs.get('email', ''), attrs['type'], attrs.get('name', ''), attrs.get('blog', ''), regular_location['name'])
         con.query(actor_sql)
-    except(umysql.SQLError):
+    except umysql.SQLError, e:
         print 'FAIL:\n', actor_sql
+        print e
+        print traceback.format_exc()
+        foo = 'select _id from Location where name = "%s" limit 1' % regular_location['name'] 
+        print '*' * 80
+        print foo
+        print '*' * 80
+        result = con.query(foo)
+        print result.rows
+        print '*' * 80
 
     # handle repo info
     try:
         repo = record['repository']
+
+        safe_name = format_utf8(repo['name'])
+        safe_owner = format_utf8(repo['owner'])
+        safe_language = format_utf8(repo.get('language', ''))
+        safe_url = format_utf8(repo['url'])
+        safe_description = format_utf8(mysql_escape(repo.get('description', '')))
+        safe_forks = format_utf8(repo['forks'])
+        safe_stars = format_utf8(repo['stargazers'])
+        safe_created_at = format_utf8(parse_iso8601(repo['created_at']))
+        safe_pushed_at = format_utf8(parse_iso8601(repo['pushed_at']))
+        safe_id = format_utf8(repo['id'])
+        safe_watchers = format_utf8(repo['watchers'])
+        safe_private = format_utf8(repo['private'])
+
         repo_sql = "\
             insert into Repo (name, owner, language, url, description, forks, stars, create_at, push_at, id, watchers, private)\
             values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')\
             on duplicate key update\
             name=values(name), owner=values(owner), language=values(language), url=values(url), description=values(description), forks=values(forks), stars=values(stars), create_at=values(create_at), push_at=values(push_at), watchers=values(watchers), private=values(private)\
-        " % (repo['name'], repo['owner'], repo.get('language', ''), repo['url'], repo.get('description', ''), repo['forks'], repo['stargazers'], parse_iso8601(repo['created_at']), parse_iso8601(repo['pushed_at']), repo['id'], repo['watchers'], repo['private'])
+        " % (safe_name, safe_owner, safe_language, safe_url, safe_description, safe_forks, safe_stars, safe_created_at, safe_pushed_at, safe_id, safe_watchers, safe_private)
         con.query(repo_sql)
-    except(umysql.SQLError):
+    except umysql.SQLError, e:
         print 'FAIL:\n', repo_sql
+        print e
+        print traceback.format_exc()
+        print record['type']
 
     # insert this event
     try:
+        safe_url = format_utf8(record['url'])
+        safe_type = format_utf8(record['type'])
+        safe_created_at = format_utf8(parse_iso8601(record['created_at']))
+        safe_id = format_utf8(repo['id'])
+        safe_actor = format_utf8(record['actor'])
+
         event_sql = "\
             insert into Event (url, type, created_at, actor, repo)\
-            values('%s', '%s', '%s', (select _id from Actor where login='%s' limit 1), (select _id from Repo where id='%s' limit 1))\
-        " % (record['url'], record['type'], parse_iso8601(record['created_at']), record['actor'], repo['id'])
+            select '%s', '%s', '%s', _id, (select _id from Repo where id='%s' limit 1)\
+            from Actor where login='%s' limit 1\
+        " % (safe_url, safe_type, safe_created_at, safe_id, safe_actor)
         con.query(event_sql)
-    except(umysql.SQLError):
+    except umysql.SQLError, e:
         print 'FAIL:\n', event_sql
+        print e
+        print traceback.format_exc()
 
 
 def get_location_from_page(login):
@@ -133,6 +180,35 @@ def search_geo(location):
 def parse_iso8601(t):
     return dateutil.parser.parse(t).strftime('%Y-%m-%d %H:%M:%S')
 
+
+def mysql_escape(s):
+    s = format_utf8(s)
+    return MySQLdb.escape_string(s)
+
+
+def format_utf8(s):
+    return s.encode('utf-8') if isinstance(s, unicode) else s
+
+
+def insert_parallel(file_name_list, greenlet_num=90):
+    for file_name in file_name_list:
+        with open(os.path.join(sys.argv[1], file_name), 'r') as f:
+            all_lines = [line for line in gzip.GzipFile(fileobj=f)]
+            while len(all_lines) >= greenlet_num:
+                jobs = [gevent.spawn(task, line) for line in all_lines[:greenlet_num]]
+                gevent.joinall(jobs)
+                del all_lines[:greenlet_num]
+            if all_lines:
+                jobs = [gevent.spawn(task, line) for line in all_lines]
+                gevent.joinall(jobs)
+
+def insert_serial(file_name_list):
+    for file_name in file_name_list:
+        with open(os.path.join(sys.argv[1], file_name), 'r') as f:
+            all_lines = [line for line in gzip.GzipFile(fileobj=f)]
+            for line in all_lines:
+                task(line)
+
 def main():
     if len(sys.argv) < 2:
         print 'Give me the json file path.'
@@ -145,18 +221,8 @@ def main():
 
     start = time.time()
 
-    greenlet_num = 90
 
-    for file_name in file_name_list:
-        with open(os.path.join(sys.argv[1], file_name), 'r') as f:
-            all_lines = [line for line in gzip.GzipFile(fileobj=f)]
-            while len(all_lines) >= greenlet_num:
-                jobs = [gevent.spawn(task, line) for line in all_lines[:greenlet_num]]
-                gevent.joinall(jobs)
-                del all_lines[:greenlet_num]
-            if all_lines:
-                jobs = [gevent.spawn(task, line) for line in all_lines]
-                gevent.joinall(jobs)
+    insert_serial(file_name_list)
 
     end = time.time()
     print 'total time:', end - start
