@@ -79,6 +79,7 @@ def task(record):
     else:
         update_actor_sql = "update Actor set location='%s', email='%s', name='%s', blog='%s', regular_location=%s where login='%s'" % \
                                 (_safe(attrs['location']), _safe(attrs.get('email', '')), _safe(attrs.get('name', '')), _safe(attrs.get('blog', '')), _id, safe_actor)
+        con.query(update_actor_sql)
 
     repo = record['repository']
     search_repo_sql = "select count(*) from Repo where id='%s'" % _safe(repo['id'])
@@ -209,8 +210,8 @@ def main():
     start = time.time()
 
     # task begins
-    # insert_serial(file_name_list)
-    insert_parallel(file_name_list)
+    insert_serial(file_name_list)
+    # insert_parallel(file_name_list)
 
     end = time.time()
     output_observe_data(end - start)
