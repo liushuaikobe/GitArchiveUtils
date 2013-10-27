@@ -61,8 +61,8 @@ def task(record):
                                 (_safe(regular_location['countryName']), safe_regular_location, _safe(regular_location['lat']), _safe(regular_location['lng']))
         con.query(insert_location_sql)
     else:
-        update_location_sql = "update Location set country='%s', lat=%s, lng=%s" % \
-                                (_safe(regular_location['countryName']), _safe(regular_location['lat']), _safe(regular_location['lng']))
+        update_location_sql = "update Location set country='%s', lat=%s, lng=%s where name='%s'" % \
+                                (_safe(regular_location['countryName']), _safe(regular_location['lat']), _safe(regular_location['lng']), safe_regular_location)
         con.query(update_location_sql)
 
     safe_actor = _safe(attrs['login'])
@@ -77,25 +77,26 @@ def task(record):
                                 (_safe(attrs['location']), safe_actor, _safe(attrs.get('email', '')), _safe(attrs.get('name', '')), _safe(attrs.get('blog', '')), _id)
         con.query(insert_actor_sql)
     else:
-        update_actor_sql = "update Actor set location='%s', email='%s', name='%s', blog='%s', regular_location=%s " % \
-                                (_safe(attrs['location']), _safe(attrs.get('email', '')), _safe(attrs.get('name', '')), _safe(attrs.get('blog', '')), _id)
+        update_actor_sql = "update Actor set location='%s', email='%s', name='%s', blog='%s', regular_location=%s where login='%s'" % \
+                                (_safe(attrs['location']), _safe(attrs.get('email', '')), _safe(attrs.get('name', '')), _safe(attrs.get('blog', '')), _id, safe_actor)
 
     repo = record['repository']
     search_repo_sql = "select count(*) from Repo where id='%s'" % _safe(repo['id'])
     r = con.query(search_repo_sql)
+    safe_id = _safe(repo['id'])
     if r.rows[0][0] == 0:
         insert_repo_sql = "insert into Repo (name, owner, language, url, description, forks, stars, create_at, push_at, id, watchers, private) \
                             values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % \
                             (_safe(repo['name']), _safe(repo['owner']), _safe(repo.get('language', '')), _safe(repo['url']), _safe(repo.get('description', '')), 
                                 _safe(repo['forks']), _safe(repo['stargazers']), _safe(parse_iso8601(repo['created_at'])), 
-                                _safe(parse_iso8601(repo['pushed_at'])), _safe(repo['id']), _safe(repo['watchers']), _safe(repo['private']))
+                                _safe(parse_iso8601(repo['pushed_at'])), safe_id, _safe(repo['watchers']), _safe(repo['private']))
         con.query(insert_repo_sql)
     else:
         update_repo_sql = "update Repo set name='%s', owner='%s', language='%s', url='%s', description='%s', forks='%s', stars='%s', create_at='%s', \
-                                push_at='%s', watchers='%s', private='%s'" % \
+                                push_at='%s', watchers='%s', private='%s' where id='%s'" % \
                                 (_safe(repo['name']), _safe(repo['owner']), _safe(repo.get('language', '')), _safe(repo['url']), _safe(repo.get('description', '')), 
                                 _safe(repo['forks']), _safe(repo['stargazers']), _safe(parse_iso8601(repo['created_at'])),
-                                _safe(parse_iso8601(repo['pushed_at'])), _safe(repo['watchers']), _safe(repo['private']))
+                                _safe(parse_iso8601(repo['pushed_at'])), _safe(repo['watchers']), _safe(repo['private']), safe_id)
         con.query(update_repo_sql)
 
     search_actor_sql = "select _id from Actor where login='%s'" % _safe(actor)
@@ -208,8 +209,8 @@ def main():
     start = time.time()
 
     # task begins
-    insert_serial(file_name_list)
-    # insert_parallel(file_name_list)
+    # insert_serial(file_name_list)
+    insert_parallel(file_name_list)
 
     end = time.time()
     output_observe_data(end - start)
