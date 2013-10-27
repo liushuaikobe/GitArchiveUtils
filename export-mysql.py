@@ -50,7 +50,7 @@ def task(record):
 
     # A separate connection object per green thread or real thread
     con = umysql.Connection()
-    con.connect('localhost', 3306, 'root', 'lskobe', 'gitarchive', True)
+    con.connect('localhost', 3306, 'root', 'lskobe', 'gitarchive')
 
     safe_regular_location = _safe(regular_location['name'])
     search_sql = "select count(*) from Location where name='%s'" % (safe_regular_location)
@@ -60,7 +60,6 @@ def task(record):
                                 values ('%s', '%s', %s, %s)" % \
                                 (_safe(regular_location['countryName']), safe_regular_location, _safe(regular_location['lat']), _safe(regular_location['lng']))
         con.query(insert_location_sql)
-        print insert_location_sql
     else:
         update_location_sql = "update Location set country='%s', lat=%s, lng=%s" % \
                                 (_safe(regular_location['countryName']), _safe(regular_location['lat']), _safe(regular_location['lng']))
@@ -92,27 +91,23 @@ def task(record):
                                 _safe(parse_iso8601(repo['pushed_at'])), _safe(repo['id']), _safe(repo['watchers']), _safe(repo['private']))
         con.query(insert_repo_sql)
     else:
-        update_repo_sql = "update Repo set name='%s', owner='%s', language='%s', url='%s', description='%s', forks='%s', stars='%s', created_at='%s', \
-                                pushed_at='%s', watchers='%s', private='%s'" % \
+        update_repo_sql = "update Repo set name='%s', owner='%s', language='%s', url='%s', description='%s', forks='%s', stars='%s', create_at='%s', \
+                                push_at='%s', watchers='%s', private='%s'" % \
                                 (_safe(repo['name']), _safe(repo['owner']), _safe(repo.get('language', '')), _safe(repo['url']), _safe(repo.get('description', '')), 
                                 _safe(repo['forks']), _safe(repo['stargazers']), _safe(parse_iso8601(repo['created_at'])),
                                 _safe(parse_iso8601(repo['pushed_at'])), _safe(repo['watchers']), _safe(repo['private']))
         con.query(update_repo_sql)
 
     search_actor_sql = "select _id from Actor where login='%s'" % _safe(actor)
-    print search_actor_sql
-    r = con.query(search_sql)
+    r = con.query(search_actor_sql)
     actor_id = r.rows[0][0] 
 
     search_repo_sql = "select _id from Repo where id='%s'" % _safe(repo['id'])
-    print search_repo_sql
-    r = con.query(search_sql)
+    r = con.query(search_repo_sql)
     repo_id = r.rows[0][0]
-    print actor_id, '=>', repo_id
     insert_event_sql = "insert into Event (url, type, created_at, actor, repo) \
                             values ('%s', '%s', '%s', %s, %s)" % \
                             (_safe(record['url']), _safe(record['type']), _safe(parse_iso8601(record['created_at'])), actor_id, repo_id)
-    print insert_event_sql
     con.query(insert_event_sql)
 
 
