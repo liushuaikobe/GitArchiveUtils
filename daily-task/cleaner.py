@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import config
+import ujson
 
 class Cleaner(object):
     """数据清洗器，对一个Json文件做清洗"""
@@ -8,7 +9,8 @@ class Cleaner(object):
         self.dirty_json_file = dirty_json_file # 要被清洗的文件
 
     def clean(self, extra_filter=None):
-        dirty_lines = [line.decode('utf-8', 'ignore') for line in self.dirty_json_file]
+        """把record转成dict并进行清洗"""
+        dirty_lines = [ujson.loads(line.decode('utf-8', 'ignore')) for line in self.dirty_json_file]
         # 找出能被称之为“贡献”的记录
         dirty_lines = filter(lambda x: x.get('type', '') in config.contribution_type, dirty_lines)
         # 找出actor属性存在且actor_attributes存在的记录（确保是真实的人而不是组织或者其他）
@@ -23,7 +25,6 @@ class Cleaner(object):
         self.clean_data = dirty_lines
 
     def set_dirty_data(self, f):
-        assert(isinstance(f, file))
         self.dirty_json_file = f
 
     def get_clean_data(self):

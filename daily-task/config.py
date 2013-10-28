@@ -10,3 +10,7 @@ db = 'sep'
 
 # 协程相关
 greenlet_num = 99
+
+# 解析地名相关
+result_num = 5 # 从服务器取回的结果条数
+username = 'liushuaikobe'
