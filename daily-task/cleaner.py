@@ -17,7 +17,8 @@ class Cleaner(object):
         dirty_lines = filter(lambda x: x.get('actor', '').strip() \
             and x.get('actor_attributes', {}).get('type') == 'User', dirty_lines)
         # 找出actor_attributes中location属性存在的记录
-        dirty_lines = filter(lambda x: 'location' in x['actor_attributes'], dirty_lines)
+        dirty_lines = filter(lambda x: 'location' in x['actor_attributes'] and \
+            x['actor_attributes']['location'].strip(), dirty_lines)
         # 自定义清洗条件
         if extra_filter and callable(extra_filter):
             dirty_lines = filter(extra_filter, dirty_lines)

@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from gevent import monkey
-monkey.patch_all()
 import requests
 import os
 import ujson
@@ -20,9 +18,9 @@ def search_geo(location):
         print 'hit'
         return location_cache[location.lower()]
     params = {'maxRows': config.result_num, 'username': config.username, 'q': location}
-    print 'requests'
+    print 'requests %s' % location
     r = requests.get('http://api.geonames.org/searchJSON', params=params)
-    print 'get response.'
+    print 'get response %s.' % location
     # 只使用查询结果的第一条
     try:
         e = ujson.loads(r.text)['geonames'][0]

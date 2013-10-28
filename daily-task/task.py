@@ -4,7 +4,6 @@ from gevent import monkey
 monkey.patch_all()
 import gevent
 import gzip
-import requests
 import sys
 import os
 import time
@@ -144,11 +143,12 @@ def main(p):
             # 处理记录的actor不存在的记录
             # 处理location信息，因为要进行网络连接，因此要控制每次处理的记录数量
             i = 0
+            t = []
             while i < len(record_actor_new):
                 jobs = [gevent.spawn(process_location_task, record) for record in record_actor_new[i:i+greenlet_num]]
                 gevent.joinall(jobs)
                 i += greenlet_num
-                print '\r%s%% finished' % ((i / len(record_actor_new)) * 100)
+                print '%s%% finished' % ((i / len(record_actor_new)) * 100)
 
             # 对那些actor是trick_actor的记录，要删掉
             record_actor_new = filter(lambda x: x['actor'] not in trick_actor, record_actor_new)
