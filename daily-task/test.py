@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from gevent import monkey
 monkey.patch_all()
 import gevent
@@ -26,6 +27,22 @@ def task(i):
     requests.get("http://www.baidu.com")
     print "finish %s" % i
 
-for i in xrange(100):
-    jobs = [gevent.spawn(utils.search_geo, i) for i in ['Harbin', 'Shanghai', 'haha', 'fuck', 'hangzhou', 'Los Angeles', 'DC', 'AB', 'Beijing', 'Nanjing']]
-    gevent.joinall(jobs)
+
+def test3(q):
+    params = {'q':q, 'maxRows':10, 'username':'liushuaikobe'}
+    r = requests.get('http://api.geonames.org/searchJSON', params=params)
+    if r.status_code != 200:
+        print r.status_code
+
+def main():
+    for i in range(100):
+        jobs = [gevent.spawn(utils.search_geo, i) for i in ['Harbin', 'Shanghai', 'haha', 'fuck', 'hangzhou', 'Los Angeles', 'DC', 'AB', 'Beijing', 'Nanjing']]
+        gevent.joinall(jobs)
+
+
+if __name__ == '__main__':
+    # main()
+    for j in range(100): 
+        jobs = [gevent.spawn(test3, i) for i in ['Harbin', 'Shanghai', 'haha', 'fuck', 'hangzhou', 'Los Angeles', 'DC', 'AB', 'Beijing', 'Nanjing'] * 10]
+        gevent.joinall(jobs)
+        print '%s passed.' % j 
