@@ -57,6 +57,8 @@ def search_geo(location):
             username = pickup_username() # 更换新的用户名
             alarm = False # 告知其他greenlet警报解除
             print 'Clear.'
+        # 休眠1分钟
+        time.sleep(60)
         # 重新尝试
         params = {'maxRows': config.result_num, 'username': username, 'q': location}
         r = requests.get('http://api.geonames.org/searchJSON', params=params)
