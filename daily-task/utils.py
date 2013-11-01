@@ -4,6 +4,7 @@ import os
 import ujson
 import time
 import config
+import log
 
 
 def load_cache(file_path=config.cache_file):
@@ -43,7 +44,6 @@ def search_geo(location):
     search_times += 1
     if location.lower() in location_cache:
         cache_hit += 1
-        # print 'hit'
         return location_cache[location.lower()]
     params = {'maxRows': config.result_num, 'username': username, 'q': location}
 
@@ -53,10 +53,10 @@ def search_geo(location):
     except Exception, e:
         # 当某一个greenlet出现了异常，说明可能当前使用的username达到了访问次数的限制
         if alarm: # 警报还未解除，说明这一批的其他greenlet还没有人做出更换username的行动
-            print 'Fire in the hole: %s max request times exceed!' % username
+            log.log('Fire in the hole: %s max request times exceed!' % username, log.WARNING)
             username = pickup_username() # 更换新的用户名
             alarm = False # 告知其他greenlet警报解除
-            print 'Clear.'
+            log.log('Clear.', log.WARNING)
         # 休眠1分钟
         time.sleep(60)
         # 重新尝试
@@ -82,5 +82,5 @@ def search_geo(location):
 
 def cache_persistence(cache=location_cache, file_path=config.cache_file):
     """将缓存保存成文本文件"""
-    with open(file_path, 'w') as f:
+    with open(file_path, 'w+') as f:
         ujson.dump(cache, f)

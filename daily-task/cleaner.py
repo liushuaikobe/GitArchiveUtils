@@ -2,6 +2,7 @@
 import config
 import ujson
 
+
 class Cleaner(object):
     """数据清洗器，对一个Json文件做清洗"""
     def __init__(self, dirty_json_file=None):

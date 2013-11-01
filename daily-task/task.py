@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import division
 from gevent import monkey
 monkey.patch_all()
 import gevent
@@ -9,6 +8,7 @@ import os
 import time
 import config
 import utils
+import log
 from cleaner import Cleaner
 from pymongo import MongoClient
 
@@ -130,35 +130,35 @@ def main(p):
             raw_json_file = gzip.GzipFile(fileobj=f)
 
             # 数据清洗
-            print 'Data cleaning...'
+            log.log('Data cleaning...')
             record_cleaner.set_dirty_data(raw_json_file)
             record_cleaner.clean()
             clean_record = record_cleaner.get_clean_data()
-            print 'cleaning finished.'
+            log.log('cleaning finished.')
 
             # 数据处理
 
             # 分组
-            print 'Data grouping...'
+            log.log('Data grouping...')
             while len(clean_record) >= 1000:
                 actor_exist_dividing(clean_record[:1000])
                 del clean_record[:1000]
             if clean_record:
                 actor_exist_dividing(clean_record)
                 del clean_record
-            print 'Grouping finished.'
+            log.log('Grouping finished.')
 
 
             # 处理记录的actor已存在的记录
-            print 'Begin processing actor-exist records...'
+            log.log('Begin processing actor-exist records...')
             # 只需要删掉记录的actor_attrs即可
             for record in record_actor_exist:
                 del record['actor_attributes']
-            print 'Finished.'
+            log.log('Finished.')
 
 
             # 处理记录的actor不存在的记录
-            print 'Begin processing new-actor records... %s total.' % len(record_actor_new)
+            log.log('Begin processing new-actor records... %s total.' % len(record_actor_new))
             # 处理location息，因为要进行网络连接，因此要控制每次处信理的记录数量
             i = 0
             while i < len(record_actor_new):
@@ -166,7 +166,7 @@ def main(p):
                 jobs = [gevent.spawn(process_location_task, record) for record in record_actor_new[i:i+greenlet_num]]
                 gevent.joinall(jobs)
                 i += greenlet_num
-                print '%s%% finished' % ((i / len(record_actor_new)) * 100)
+                log.log('%s%% finished' % ((float(i) / float(len(record_actor_new))) * 100.0))
 
 
             # 对那些actor是trick_actor的记录，要删掉
@@ -174,17 +174,17 @@ def main(p):
 
             # 把本地的今日新增的Actor更新到数据库
             bulk_num = 1000
-            print 'Insert new actor of today...%s total.' % len(new_actor_cache)
+            log.log('Insert new actor of today...%s total.' % len(new_actor_cache))
             actors = [new_actor_cache[actor] for actor in new_actor_cache]
             jobs = [gevent.spawn(insert_new_actor_task, actors[i:i+bulk_num]) for i in xrange(0, len(actors), bulk_num)]
             gevent.joinall(jobs)
-            print 'Finished.'
+            log.log('Finished.')
 
             # 计算每条记录的val
-            print 'Calc the val of each records...'
+            log.log('Calc the val of each records...')
             process_val(record_actor_exist)
             process_val(record_actor_new)
-            print 'Finished.'
+            log.log('Finished.')
 
             # 删除每条记录的payload
             for record in record_actor_new:
@@ -193,30 +193,30 @@ def main(p):
                 del record['payload']
 
             # 将记录插入数据库
-            print 'Insert all records into DB...'
+            log.log('Insert all records into DB...')
             jobs = [gevent.spawn(insert_new_records_task, record_actor_new[i:i+bulk_num]) for i in \
                                                                     xrange(0, len(record_actor_new), bulk_num)]
             gevent.joinall(jobs)
             jobs = [gevent.spawn(insert_new_records_task, record_actor_exist[i:i+bulk_num]) for i in \
                                                                     xrange(0, len(record_actor_exist), bulk_num)]
             gevent.joinall(jobs)
-            print 'Finished.'
+            log.log('Finished.')
 
             # 将今日用户新增的val更新到数据库
-            print 'Update the added value of each user...'
+            log.log('Update the added value of each user...')
             update_val_task(actor_val_cache)
-            print 'Finished.'
+            log.log('Finished.')
 
             # 清除缓存，准备处理下一个文件
-            print 'Clear cache...'
+            log.log('Clear cache...')
             clear_cache()
-            print 'Finished.'
+            log.log('Finished.')
 
     # 将地名缓存持久化
     utils.cache_persistence(utils.location_cache)
 
     end = time.time()
-    print 'total: %s s' % (end - start)
+    log.log('total: %s s' % (end - start))
 
 
 if __name__ == '__main__':
