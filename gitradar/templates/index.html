@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Git Radar</title>
+    </head>
+    <body>
+        <form method="post" action="">
+            <input type="text" id="location" name="location">
+            <input type="submit" id="post">
+        </form>
+
+        {% if actors %}
+        <ul>
+            {% for actor in actors %}
+                <li><a href="https://github.com/{{ actor['login'] }}">{{ actor['login'] }}</a>&nbsp;{{ actor['val'] }}</li>
+            {% end %}
+        </ul>
+        {% end %}
+    </body>
+</html>
