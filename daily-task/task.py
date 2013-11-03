@@ -9,6 +9,7 @@ import time
 import config
 import utils
 import log
+import downloader
 from cleaner import Cleaner
 from pymongo import MongoClient
 
@@ -220,7 +221,11 @@ def main(p):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print 'Give me the json file path.'
-        sys.exit(1)
-    main(sys.argv[1])
+    if config.debug:
+        if len(sys.argv) < 2:
+            print 'Give me the json file path.'
+            sys.exit(1)
+        main(sys.argv[1])
+    else:
+        downloader.fetch_yesterday()
+        main(downloader.data_dir)

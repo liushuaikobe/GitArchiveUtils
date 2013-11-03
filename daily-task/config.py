@@ -2,6 +2,9 @@
 import os
 
 
+# debug
+debug = True
+
 # 能被称之为贡献的记录类型
 contribution_type = ('IssuesEvent', 'PullRequestEvent', 'PushEvent')
 
@@ -22,6 +25,10 @@ cache_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'location.
 
 # 日志的位置
 log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log.txt')
+
+# 数据保存的位置
+data_base = '/home/liushuai/data'
+# data_base = '/Users/liushuai/Downloads/data'
 
 # 计算价值相关
 credit = {
