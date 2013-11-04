@@ -50,7 +50,9 @@ def fetch(year, month, day, n):
         os.fsync(f.fileno())
         f.close()
         shutil.move(f.name, local_fn)
-    log.log('Downloading {0}-{1:02d}-{2:02d}-{3}.json.gz finished.'.format(year, month, day, n))
+        log.log('Downloading {0}-{1:02d}-{2:02d}-{3}.json.gz finished.'.format(year, month, day, n))
+    else:
+        log.log('Fail downloading {0}-{1:02d}-{2:02d}-{3}.json.gz. ({4}).'.format(year, month, day, n, r.status_code), log.ERROR)
 
 
 def fetch_yesterday():

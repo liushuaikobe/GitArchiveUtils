@@ -15,7 +15,8 @@
             {% for actor in actors %}
                 <li>
                     <a href="https://github.com/{{ actor['login'] }}">{{ actor['login'] }}</a>({{ actor.get('name', 'null') }})&nbsp;{{ actor['val'] }}
-                    <img src="http://www.gravatar.com/avatar/{{ actor['gravatar_id'] }}">
+                    <!-- the avatar of some actors doesn't exist -->
+                    <!-- <img src="http://www.gravatar.com/avatar/{{ actor['gravatar_id'] }}"> -->
                 </li>
             {% end %}
         </ul>
