@@ -31,10 +31,10 @@ def actor_exist_dividing(records):
     # 去重
     all_logins = {}.fromkeys(all_logins).keys()
     result = client[config.db].actor.find({"login": {"$in": all_logins}}, {"login": 1})
-    if not result:
-        record_actor_new.append(records)
+    exist_actors = [r['login'] for r in result]
+    if not exist_actors:
+        record_actor_new.extend(records)
         return
-    exist_actors = [r['login'].encode('utf-8') for r in result]
     for record in records:
         if record['actor_attributes']['login'] in exist_actors:
             record_actor_exist.append(record)
@@ -43,7 +43,7 @@ def actor_exist_dividing(records):
 
 
 def process_location_task(record):
-    """对每个Actor进行地名的处理，本方法应该只应用于当日新增的Actor"""
+    """对每个Actor进行地名的处理，本方法应该只应用于当日新增Actor的记录"""
     actor = record['actor']
     # 之前已经对这个用户进行过location的规范化了
     if actor in new_actor_cache or actor in trick_actor:
@@ -151,7 +151,7 @@ def main(p):
 
 
             # 处理记录的actor已存在的记录
-            log.log('Begin processing actor-exist records...')
+            log.log('Begin processing actor-exist records... %s total.' % len(record_actor_exist))
             # 只需要删掉记录的actor_attrs即可
             for record in record_actor_exist:
                 del record['actor_attributes']
@@ -160,7 +160,7 @@ def main(p):
 
             # 处理记录的actor不存在的记录
             log.log('Begin processing new-actor records... %s total.' % len(record_actor_new))
-            # 处理location息，因为要进行网络连接，因此要控制每次处信理的记录数量
+            # 处理location息，因为要进行网络连接，因此要控制每次处理的记录数量
             i = 0
             while i < len(record_actor_new):
                 utils.set_alarm() # 设置警报
@@ -177,7 +177,7 @@ def main(p):
             bulk_num = 1000
             log.log('Insert new actor of today...%s total.' % len(new_actor_cache))
             actors = [new_actor_cache[actor] for actor in new_actor_cache]
-            jobs = [gevent.spawn(insert_new_actor_task, actors[i:i+bulk_num]) for i in xrange(0, len(actors), bulk_num)]
+            jobs = [gevent.spawn(insert_new_actor_task, actors[i:i+bulk_num]) for i in range(0, len(actors), bulk_num)]
             gevent.joinall(jobs)
             log.log('Finished.')
 
@@ -196,10 +196,10 @@ def main(p):
             # 将记录插入数据库
             log.log('Insert all records into DB...')
             jobs = [gevent.spawn(insert_new_records_task, record_actor_new[i:i+bulk_num]) for i in \
-                                                                    xrange(0, len(record_actor_new), bulk_num)]
+                                                                    range(0, len(record_actor_new), bulk_num)]
             gevent.joinall(jobs)
             jobs = [gevent.spawn(insert_new_records_task, record_actor_exist[i:i+bulk_num]) for i in \
-                                                                    xrange(0, len(record_actor_exist), bulk_num)]
+                                                                    range(0, len(record_actor_exist), bulk_num)]
             gevent.joinall(jobs)
             log.log('Finished.')
 

@@ -34,6 +34,31 @@ def test3(q):
     if r.status_code != 200:
         print r.status_code
 
+t41 = []
+def test4(r):
+    t41.extend(r)
+    print t41
+
+
+def test5():
+    a = range(200)
+    i = 0
+    while len(a) > 37:
+        test4(a[:37])
+        del a[:37]
+    if a:
+        test4(a)
+        del a
+    print a
+
+
+def test6():
+    for j in range(100): 
+        jobs = [gevent.spawn(test3, i) for i in ['Harbin', 'Shanghai', 'haha', 'fuck', 'hangzhou', 'Los Angeles', 'DC', 'AB', 'Beijing', 'Nanjing'] * 10]
+        gevent.joinall(jobs)
+        print '%s passed.' % j 
+
+
 def main():
     for i in range(100):
         jobs = [gevent.spawn(utils.search_geo, i) for i in ['Harbin', 'Shanghai', 'haha', 'fuck', 'hangzhou', 'Los Angeles', 'DC', 'AB', 'Beijing', 'Nanjing']]
@@ -41,8 +66,4 @@ def main():
 
 
 if __name__ == '__main__':
-    # main()
-    for j in range(100): 
-        jobs = [gevent.spawn(test3, i) for i in ['Harbin', 'Shanghai', 'haha', 'fuck', 'hangzhou', 'Los Angeles', 'DC', 'AB', 'Beijing', 'Nanjing'] * 10]
-        gevent.joinall(jobs)
-        print '%s passed.' % j 
+    test5()
