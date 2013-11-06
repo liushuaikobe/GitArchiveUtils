@@ -1,29 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta http-equiv="content-type" content="text/html; charset=utf-8">
-        <title>Git Radar</title>
+{% extends "./base.html" %}
 
-        <link rel="stylesheet" type="text/css" href="{{ static_url("normalize.css") }}">
-    </head>
-    <body>
-        <div class="container">
-            <div id="search">
-                <div id="title">Git Radar</div>
-                <form method="post" action="">
-                    <input type="text" id="location" name="location">
-                </form>
-            </div>
-        </div>
+{% block content %}
+<div id="search">
+    <div id="title">Git Radar</div>
+    <form method="post" action="">
+        <input type="text" id="location" name="location">
+    </form>
+</div>
 
-        {% if actors %}
-        <ul>
-            {% for actor in actors %}
-                <li>
-                    <a href="https://github.com/{{ actor['login'] }}">{{ actor['login'] }}</a>({{ actor.get('name', 'null') }})&nbsp;{{ actor['val'] }}
-                </li>
-            {% end %}
-        </ul>
-        {% end %}
-    </body>
-</html>
+{% if actors %}
+<ul>
+    {% for actor in actors %}
+        <li>
+            <a href="/report/{{ actor['login'] }}">{{ actor['login'] }}</a>({{ actor.get('name', 'null') }})&nbsp;{{ actor['val'] }}
+        </li>
+    {% end %}
+</ul>
+{% end %}
+
+{% end %}

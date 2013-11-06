@@ -1,16 +1,19 @@
+# -*- coding: utf-8 -*-
 from tornado.web import Application
 from tornado.options import options, parse_config_file
 from tornado.ioloop import IOLoop
 import motor
 import os
 from handlers.index import IndexHandler
+from handlers.report import ReportHandler
 
 
 parse_config_file('config.py')
 db = motor.MotorClient('172.16.0.1', 27017).open_sync().sep
 
 handlers = [
-    (r'/', IndexHandler)
+    (r'/', IndexHandler),
+    (r'/report/([a-z0-9]+)', ReportHandler)
 ]
 
 settings = {

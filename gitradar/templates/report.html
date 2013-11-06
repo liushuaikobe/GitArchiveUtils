@@ -1,0 +1,28 @@
+{% extends "./base.html" %}
+
+{% block content %}
+
+<h2><a href="https://github.com/{{ actor }}">{{ actor }}</a></h2>
+{% if result %}
+<ul>
+{% for r in result %}
+    <li>
+        Repo id: {{ int(r["repository.id"]) }}
+        <ul>
+        {% for c in r["contribution"] %}
+            <li>
+                <a href="{{ c["url"] }}">{{ c["name"] }}</a> ☆:{{ int(c["star"]) }} Y:{{ int(c["fork"]) }}
+                <ul>
+                    {% for t in c["payload"] %}
+                        <li>{{ t }} {{ int(c["payload"][t]) }}</li>
+                    {% end %}
+                </ul>
+            </li>
+        {% end %}
+        </ul>
+    </li>       
+{% end %}
+</ul>
+{% end %}
+
+{% end %}
