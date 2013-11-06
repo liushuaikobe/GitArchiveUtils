@@ -1,22 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta charset="utf-8">
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
         <title>Git Radar</title>
+
+        <link rel="stylesheet" type="text/css" href="{{ static_url("normalize.css") }}">
     </head>
     <body>
-        <form method="post" action="">
-            <input type="text" id="location" name="location">
-            <input type="submit" id="post">
-        </form>
+        <div class="container">
+            <div id="search">
+                <div id="title">Git Radar</div>
+                <form method="post" action="">
+                    <input type="text" id="location" name="location">
+                </form>
+            </div>
+        </div>
 
         {% if actors %}
         <ul>
             {% for actor in actors %}
                 <li>
                     <a href="https://github.com/{{ actor['login'] }}">{{ actor['login'] }}</a>({{ actor.get('name', 'null') }})&nbsp;{{ actor['val'] }}
-                    <!-- the avatar of some actors doesn't exist -->
-                    <!-- <img src="http://www.gravatar.com/avatar/{{ actor['gravatar_id'] }}"> -->
                 </li>
             {% end %}
         </ul>
