@@ -20,6 +20,10 @@ class Cleaner(object):
         # 找出actor_attributes中location属性存在的记录
         dirty_lines = filter(lambda x: 'location' in x['actor_attributes'] and \
             x['actor_attributes']['location'].strip(), dirty_lines)
+        # 删除每条记录的payload属性
+        for line in dirty_lines:
+            del line['payload']
+
         # 自定义清洗条件
         if extra_filter and callable(extra_filter):
             dirty_lines = filter(extra_filter, dirty_lines)

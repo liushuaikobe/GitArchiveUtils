@@ -72,19 +72,6 @@ def insert_new_actor_task(records):
     client[config.db].actor.insert(records)
 
 
-def calc_record_val(record):
-    """计算一条贡献的价值"""
-    repo_val = calc_repo_val(record['repository']) if 'repository' in record else 0
-    return config.credit[record['type']] + repo_val
-
-
-def calc_repo_val(repo):
-    """计算一个repo的价值"""
-    repo_stars = float(repo['stargazers'])
-    repo_forks = float(repo['forks'])
-    return repo_stars * config.weight['star'] + repo_forks * config.weight['fork']
-
-
 def process_val(records):
     """计算records中每条行为的价值，更新到内存中的缓存"""
     for record in records:
@@ -188,10 +175,10 @@ def main(p):
             log.log('Finished.')
 
             # 删除每条记录的payload
-            for record in record_actor_new:
-                del record['payload']
-            for record in record_actor_exist:
-                del record['payload']
+            # for record in record_actor_new:
+            #     del record['payload']
+            # for record in record_actor_exist:
+            #     del record['payload']
 
             # 将记录插入数据库
             log.log('Insert all records into DB...')
