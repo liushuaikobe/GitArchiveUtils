@@ -1,25 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Git Radar</title>
-    </head>
-    <body>
-        <form method="post" action="">
-            <input type="text" id="location" name="location">
-            <input type="submit" id="post">
-        </form>
+{% extends "./base.html" %}
 
-        {% if actors %}
-        <ul>
-            {% for actor in actors %}
-                <li>
-                    <a href="https://github.com/{{ actor['login'] }}">{{ actor['login'] }}</a>({{ actor.get('name', 'null') }})&nbsp;{{ actor['val'] }}
-                    <!-- the avatar of some actors doesn't exist -->
-                    <!-- <img src="http://www.gravatar.com/avatar/{{ actor['gravatar_id'] }}"> -->
-                </li>
-            {% end %}
-        </ul>
-        {% end %}
-    </body>
-</html>
+{% block content %}
+<div id="search">
+    <div id="title">Git Radar</div>
+    <form method="post" action="">
+        <input type="text" id="location" name="location">
+    </form>
+</div>
+
+{% if actors %}
+<ul>
+    {% for actor in actors %}
+        <li>
+            <a href="/report/{{ actor['login'] }}">{{ actor['login'] }}</a>({{ actor.get('name', 'null') }})&nbsp;{{ actor['val'] }}
+        </li>
+    {% end %}
+</ul>
+{% end %}
+
+{% end %}
