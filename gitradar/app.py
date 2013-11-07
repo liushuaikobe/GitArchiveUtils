@@ -13,7 +13,7 @@ db = motor.MotorClient('172.16.0.1', 27017).open_sync().sep
 
 handlers = [
     (r'/', IndexHandler),
-    (r'/report/([a-z0-9]+)', ReportHandler)
+    (r'/report/([A-Za-z0-9]+)', ReportHandler)
 ]
 
 settings = {
