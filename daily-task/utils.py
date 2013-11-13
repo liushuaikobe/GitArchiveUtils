@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+'''
+Created on 2013-11-05 20:39:05
+
+@author: liushuai
+@email: liushuaikobe@gmail.com
+@last modified by: liushuai
+@last modified on: 2013-11-13 14:18:23
+'''
 import requests
 import os
 import ujson

@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+'''
+Created on 2013-11-13 14:15:52
+
+@author: liushuai
+@email: liushuaikobe@gmail.com
+@last modified by: liushuai
+@last modified on: 2013-11-13 18:51:23
+'''
 import os
 
 
@@ -22,6 +30,9 @@ username = ('liushuaikobe','lskobe', 'lskobeqq')
 
 # 缓存保存的位置
 cache_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'location.txt')
+redis_addr = 'localhost'
+redis_port = 6379
+redis_prefix = 'gitradar'
 
 # 日志的位置
 log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log.txt')
