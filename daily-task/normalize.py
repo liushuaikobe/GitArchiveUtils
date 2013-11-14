@@ -65,37 +65,55 @@ class Normalizer(object):
     def normalize(self):
         for i, record in enumerate(self.records):
             actor = record['actor']
+
             # 之前已经处理过该用户的行为记录，并已经规范化过
+
             if actor in self.new_actors:
                 # 只需删掉这条记录的actor_attributes
                 del record['actor_attributes']
                 continue
+            if actor in self.trick_actors:
+                continue
+
             # 第一次遇见该用户的行为记录
+
             attrs = record['actor_attributes']
             location = attrs['location']
 
-            cache_result = self.cache().get_location(location)
-
+            cache_result = self.cache.get_location(location)
+            # 根据缓存结果不同做出不同处理
             if cache_result == -1:
                 # 把该用户加入到trick_actor，在将来这条记录要删除
                 self.trick_actors.add(actor)
             else if cache_result is not None:
-                cache_result['origin'] = location
-                attrs['location'] = cache_result
-                # 把该用户添加到new_actors
-                self.new_actors[actor] = attrs
+                self.process_new_actor(attrs, cache_result)
                 del record['actor_attributes']
             else:
                 if location in self.webservice_cache:
                     self.webservice_cache[location].append(i)
                 else:
                     self.webservice_cache[location] = [i]
-                if len(self.webservice_cache) == self.greenlet_num:
-                    try:
-                        jobs = [gevent.spawn(self.search, l) for l in self.webservice_cache]
-                    except Exception, e:
-                    # TODO 回调
-                    pass
+                    if len(self.webservice_cache) == self.greenlet_num:
+                        try:
+                            jobs = [gevent.spawn(self.search, l) for l in self.webservice_cache]
+                            gevent.joinall(jobs)
+                            for i, l in enumerate(self.webservice_cache):
+                                for j in self.webservice_cache[l]:
+                                    search_result = jobs[i].value
+                                    self.cache.put_location(l, search_result)
+                                    if search_result:
+                                        self.process_new_actor(self.records[j]['actor_attributes'], search_result)
+                                    else:
+                                        self.trick_actors.add(self.records[j]['actor'])
+                        except Exception, e:
+                            pass
+
+        def process_new_actor(self, actor_attributes, regular_location):
+            regular_location['origin'] = actor_attributes['location']
+            actor_attributes['location'] = regular_location
+            # 把该用户添加到new_actors
+            self.new_actors[actor_attributes['login']] = actor_attributes
+
 
         def search(self, location):
             params = {'maxRows': config.result_num, 'username': self.username, 'q': location}

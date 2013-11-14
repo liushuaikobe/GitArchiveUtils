@@ -33,9 +33,9 @@ class Grouper(object):
                 self.cache[actor].append(record)
             else:
                 self.cache[actor] = [record]
-            if len(self.cache) == self.bulk_num:
-                result = self.query()
-                self.process(result)
+                if len(self.cache) == self.bulk_num:
+                    result = self.query()
+                    self.process(result)
 
     def query(self):
         """发送查询请求"""
