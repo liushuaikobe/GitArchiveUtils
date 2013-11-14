@@ -49,13 +49,14 @@ class LocationCache(Cache):
         self.search_count = 0 # 用于记录查询的总次数
         self.hit_count = 0 # 用于记录缓存的命中次数
         
-    def put_location(self, location, regular_location):
+    def put_location(self, location, regular_location, execute_right_now=True):
         if regular_location is None:
             self.set(location, -1)
         else:
             for e in regular_location:
                 self.set(':'.join((location, e)), regular_location[e])
-        self.execute()
+        if execute_right_now:
+            self.execute()
 
     def get_location(self, location):
         self.search_count += 1
@@ -79,7 +80,8 @@ class LocationCache(Cache):
                 'name': result[1],
                 'countryName': result[2],
                 'lat': result[3],
-                'lng': result[4]
+                'lng': result[4],
+                'origin': location
             }
 
         def set_hit_result(self):
