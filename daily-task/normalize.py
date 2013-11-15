@@ -12,7 +12,11 @@ monkey.patch_all()
 import gevent
 import requests
 import ujson
-from .cache import LocationCache
+import config
+import log
+import decorator
+from cache import LocationCache
+from requests.exceptions import RequestException, ConnectionError
 
 
 class Normalizer(object):
@@ -53,26 +57,27 @@ class Normalizer(object):
         self.webservice_cache = {} 
         self.new_actors = {} # 今日新增的用户和他们的规范化信息
 
-        self.username = self.pickup_username()
         self.username_desperate = []
+        self.username = self.pickup_username()
 
-    def set_record(self, r):
+        self.trick_actor_indices = []
+
+    def set_records(self, r):
         self.records = r
 
     def archive_by_location(self):
         for i, record in enumerate(self.records):
-            location = record['actor_attributes']['location']
+            location = record['actor_attributes']['location'].encode('utf-8')
             if location in self.webservice_cache:
                 self.webservice_cache[location].append(i)
             else:
                 self.webservice_cache[location] = [i]
 
-    def process_trick_actor(self, trick_actor_indexes):
-        for i in trick_actor_indexes:
-            del self.records[i]
+    def process_trick_actor(self, trick_actor_indices):
+        self.trick_actor_indices.extend(trick_actor_indices)
 
-    def process_good_actor(self, good_actor_indexes, regular_location):
-        for i in good_actor_indexes:
+    def process_good_actor(self, good_actor_indices, regular_location):
+        for i in good_actor_indices:
             r = self.records[i]
             actor = r['actor']
             attrs = r['actor_attributes']
@@ -80,31 +85,60 @@ class Normalizer(object):
             self.new_actors[actor] = attrs # 因为用字典保存，因此直接做更新即可，后面重复的自动覆盖
             del self.records[i]['actor_attributes']
 
+    def clean_trick_records(self):
+        # 这样删除是错误的，在数组中，删除一个元素，它后面元素的索引也随之变化。见：http://goo.gl/PHwtcE
+        # for i in self.trick_actor_indices:
+        #     del self.records[i]
+        self.trick_actor_indices.sort(reverse=True)
+        for i in self.trick_actor_indices:
+            del self.records[i]
+
     def process(self):
         # 对所有记录尝试从缓存中进行规范化
+        print 'fuck =>', len(self.trick_actor_indices)
+        log.log('Try to Normalize from cache...%s total in webservice_cache.' % len(self.webservice_cache))
+        l_found_in_cache = set([]) # 在缓存中找到的location
         for location in self.webservice_cache:
             regular_location = self.cache.get_location(location)
             if regular_location == -1:
                 self.process_trick_actor(self.webservice_cache[location])
-                del self.webservice_cache[location]
-            else if regular_location is not None:
+                l_found_in_cache.add(location)
+            elif regular_location is not None:
                 self.process_good_actor(self.webservice_cache[location], regular_location)
-                del self.webservice_cache[location]
+                l_found_in_cache.add(location)
+        for l in l_found_in_cache:
+            del self.webservice_cache[l]
+        log.log('Finished. %s remain.' % len(self.webservice_cache))
 
         # 对剩下的记录，不得不尝试调用Web Service来进行规范化
+        log.log('Have to Normalize via Web Service...')
         locations = self.webservice_cache.keys()
         webservice_result = {}
         i = 0
         while i < len(locations):
-            jobs = [gevent.spawn(self.search, l) for l in locations[i:i+self.greenlet_num]]
-            gevent.joinall(jobs)
+            alarm = True
+            while alarm:
+                try:
+                    jobs = [gevent.spawn(self.search, l) for l in locations[i:i+self.greenlet_num]]
+                    gevent.joinall(jobs)
+                    log.log('%.2f%% finished.' % (float(i) / float(len(locations)) * 100))
+                    alarm = False
+                except (RequestException, ConnectionError):
+                    log.log('Fire in the hole: %s max request times exceed!' % self.username, log.WARNING)
+                    self.username = self.pickup_username()
+                    log.log('Username change to %s.' % self.username, log.WARNING)
+                    log.log('I am going to sleeping...')
+                    # 休眠5分钟
+                    time.sleep(60 * 5)
+                    log.log('I waked up, retry now!')
+                    alarm = True
             for r in jobs:
-                webservice_result[r.value['origin']] = r.value
+                webservice_result[r.value[0]] = r.value[1]
             i += self.greenlet_num
 
         # 将来之不易的数据缓存
         for r in webservice_result:
-            self.cache.put_location(r, webservice_result[i], False)
+            self.cache.put_location(r, webservice_result[r], False)
         self.cache.execute()
 
         for location in self.webservice_cache:
@@ -114,13 +148,6 @@ class Normalizer(object):
             else:
                 self.process_good_actor(self.webservice_cache[location], regular_location)
 
-    def process_new_actor(self, actor_attributes, regular_location):
-        regular_location['origin'] = actor_attributes['location']
-        actor_attributes['location'] = regular_location
-        # 把该用户添加到new_actors
-        self.new_actors[actor_attributes['login']] = actor_attributes
-
-
     def search(self, location):
         params = {'maxRows': config.result_num, 'username': self.username, 'q': location}
         r = requests.get('http://api.geonames.org/searchJSON', params=params)
@@ -128,27 +155,35 @@ class Normalizer(object):
             e = ujson.loads(r.text)['geonames'][0]
             regular_location = {
                 # 'toponymName' 和 'name'的区别：http://goo.gl/Lbp14Q
-                'name': e['name'] if 'name' in e else e['toponymName'].encode('utf-8'),
-                'countryName': e['countryName'] if 'countryName' in e else e['countryCode'].encode('utf-8'),
-                'lat': e['lat'],
-                'lng': e['lng'],
+                'name': e['name'].encode('utf-8') if 'name' in e else e['toponymName'].encode('utf-8'),
+                'countryName': e['countryName'].encode('utf-8') if 'countryName' in e else e['countryCode'].encode('utf-8'),
+                'lat': e['lat'].encode('utf-8'),
+                'lng': e['lng'].encode('utf-8'),
                 'origin': location
             }
         except (KeyError, IndexError):
             regular_location = None
-        return regular_location
+        return location, regular_location
 
 
-    def pickup_username():
+    def pickup_username(self):
         """找到一个可以用的Geoname用户名"""
         for u in config.username:
             if u not in self.username_desperate:
                 self.username_desperate.append(u)
                 return u
 
+    @decorator._log('Normalizing...', 'Normalizing finished.')
     def normalize(self):
         self.archive_by_location()
         self.process()
+        self.clean_trick_records()
+
+    def get_new_actors(self):
+        return self.new_actors
+
+    def get_record_actor_exist(self):
+        return self.records
 
 
 

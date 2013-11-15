@@ -10,7 +10,7 @@ Created on 2013-11-13 14:38:43
 import log
 import functools
 
-def log(before_msg, after_msg):
+def _log(before_msg, after_msg):
     def actual_decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):

@@ -18,7 +18,7 @@ class Cleaner(object):
         self.clean_data = [] # 保存清洗之后的数据
         self.dirty_json_file = dirty_json_file # 要被清洗的文件
 
-    @decorator.log('Data cleaning...', 'Cleaning finished.')
+    @decorator._log('Data cleaning...', 'Cleaning finished.')
     def clean(self, extra_filter=None):
         """把record转成dict并进行清洗"""
         dirty_lines = [ujson.loads(line.decode('utf-8', 'ignore')) for line in self.dirty_json_file]

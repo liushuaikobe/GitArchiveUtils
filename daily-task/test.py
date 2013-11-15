@@ -67,7 +67,7 @@ def test6():
         gevent.joinall(jobs)
         print '%s passed.' % j 
 
-@decorator.log('fuck', 'haha')
+@decorator._log('fuck', 'haha')
 def test7():
     print 'in test7'
 

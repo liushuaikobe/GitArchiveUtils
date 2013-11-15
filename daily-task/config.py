@@ -17,9 +17,9 @@ debug = True
 contribution_type = ('IssuesEvent', 'PullRequestEvent', 'PushEvent')
 
 # 数据库相关
-db_addr = 'localhost'
+db_addr = '172.16.0.1'
 db_port = 27017
-db = 'sep'
+db = 'op_test'
 
 # 协程相关
 greenlet_num = 40
@@ -29,8 +29,7 @@ result_num = 1 # 从服务器取回的结果条数
 username = ('liushuaikobe','lskobe', 'lskobeqq')
 
 # 缓存保存的位置
-cache_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'location.txt')
-redis_addr = 'localhost'
+redis_addr = '172.16.0.1'
 redis_port = 6379
 redis_prefix = 'gitradar'
 
