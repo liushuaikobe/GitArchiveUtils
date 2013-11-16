@@ -15,6 +15,7 @@ import ujson
 import config
 import log
 import decorator
+from functools import partial
 from cache import LocationCache
 from requests.exceptions import RequestException, ConnectionError
 
@@ -62,6 +63,8 @@ class Normalizer(object):
 
         self.trick_actor_indices = []
 
+        self.webservice_result = {} # 每次发起的协程任务的返回结果
+
     def set_records(self, r):
         self.records = r
 
@@ -94,8 +97,7 @@ class Normalizer(object):
             del self.records[i]
 
     def process(self):
-        # 对所有记录尝试从缓存中进行规范化
-        print 'fuck =>', len(self.trick_actor_indices)
+        # 首先，对所有记录尝试从缓存中进行规范化
         log.log('Try to Normalize from cache...%s total in webservice_cache.' % len(self.webservice_cache))
         l_found_in_cache = set([]) # 在缓存中找到的location
         for location in self.webservice_cache:
@@ -113,44 +115,51 @@ class Normalizer(object):
         # 对剩下的记录，不得不尝试调用Web Service来进行规范化
         log.log('Have to Normalize via Web Service...')
         locations = self.webservice_cache.keys()
-        webservice_result = {}
         i = 0
         while i < len(locations):
-            alarm = True
-            while alarm:
-                try:
-                    jobs = [gevent.spawn(self.search, l) for l in locations[i:i+self.greenlet_num]]
-                    gevent.joinall(jobs)
-                    log.log('%.2f%% finished.' % (float(i) / float(len(locations)) * 100))
-                    alarm = False
-                except (RequestException, ConnectionError):
-                    log.log('Fire in the hole: %s max request times exceed!' % self.username, log.WARNING)
-                    self.username = self.pickup_username()
-                    log.log('Username change to %s.' % self.username, log.WARNING)
-                    log.log('I am going to sleeping...')
-                    # 休眠5分钟
-                    time.sleep(60 * 5)
-                    log.log('I waked up, retry now!')
-                    alarm = True
-            for r in jobs:
-                webservice_result[r.value[0]] = r.value[1]
+            self.invoke_webservice_task(locations[i:i+self.greenlet_num])
+            log.log('%.2f%% finished.' % (float(i) / float(len(locations)) * 100))
             i += self.greenlet_num
 
         # 将来之不易的数据缓存
-        for r in webservice_result:
-            self.cache.put_location(r, webservice_result[r], False)
+        for r in self.webservice_result:
+            self.cache.put_location(r, self.webservice_result[r], False)
         self.cache.execute()
 
         for location in self.webservice_cache:
-            regular_location = webservice_result[location]
+            regular_location = self.webservice_result[location]
             if regular_location == None:
                 self.process_trick_actor(self.webservice_cache[location])
             else:
                 self.process_good_actor(self.webservice_cache[location], regular_location)
 
+    def invoke_webservice_task(self, locations):
+        """利用Python的协程技术将locations中的地名通过webservice得到其规范化的信息，
+        将结果存入实例变量self.webservice_result中
+        """
+        jobs = [gevent.spawn(self.search, l) for l in locations]
+        x = [j.link_exception(partial(self.on_webservice_error, 
+            partial(self.invoke_webservice_task, locations))) for j in jobs]
+        gevent.joinall(jobs)
+        for j in jobs:
+            if j is None:
+                continue
+            self.webservice_result[j.value[0]] = j.value[1]
+
+    def on_webservice_error(self, func, greenlet):
+        """执行调用WebService任务的某一个协程出现了错误时，被调用"""
+        log.log(greenlet.exception, log.ERROR)
+        if 'reset' in greenlet.exception:
+            log.log('Fire in the hole: %s max request times exceed!' % self.username, log.WARNING)
+            self.username = self.pickup_username()
+            log.log('Username change to %s.' % self.username, log.WARNING)
+        func()
+
     def search(self, location):
+        log.log('Requests => %s' % location)
         params = {'maxRows': config.result_num, 'username': self.username, 'q': location}
         r = requests.get('http://api.geonames.org/searchJSON', params=params)
+        log.log('Get Response => %s' % location)
         try:
             e = ujson.loads(r.text)['geonames'][0]
             regular_location = {
@@ -184,10 +193,3 @@ class Normalizer(object):
 
     def get_record_actor_exist(self):
         return self.records
-
-
-
-
-
-
-

@@ -11,7 +11,6 @@ from gevent import monkey
 monkey.patch_all()
 import gevent
 import requests
-import utils
 import decorator
 
 
@@ -71,11 +70,27 @@ def test6():
 def test7():
     print 'in test7'
 
-def main():
-    for i in range(100):
-        jobs = [gevent.spawn(utils.search_geo, i) for i in ['Harbin', 'Shanghai', 'haha', 'fuck', 'hangzhou', 'Los Angeles', 'DC', 'AB', 'Beijing', 'Nanjing']]
-        gevent.joinall(jobs)
+def test8():
+    return 2 / 0
 
+def test9():
+    try:
+        test8()
+    except Exception, e:
+        print 'fuckkk...'
+
+def test10():
+    10 / 0
+
+def test12_onError():
+    
+
+def test11():
+    try:
+        jobs = [gevent.spawn_link_exception(test10) for _ in range(10)]
+        gevent.joinall(jobs)
+    except Exception, e:
+        print 'liushuaikobe~~!!'
 
 if __name__ == '__main__':
-    test7()
+    test11()

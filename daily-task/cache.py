@@ -67,16 +67,16 @@ class LocationCache(Cache):
         result = self.execute()
         if result[0] is None:
             # 缓存未命中
-            log.log('missing => %s' % location)
+            # log.log('missing => %s' % location)
             return None
         elif result[0] == '-1':
             # 缓存命中，但之前没有规范化的结果，是一个trick_actor
-            log.log('hit trick =>%s' % location)
+            # log.log('hit trick => %s' % location)
             self.hit_count += 1
             return -1
         else:
             # 缓存命中，是一个非常给力的用户：）
-            log.log('hit normal =>%s' % location)
+            # log.log('hit normal => %s' % location)
             self.hit_count += 1
             return {
                 'name': result[1],
