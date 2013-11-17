@@ -10,6 +10,8 @@ Created on 2013-11-17 13:34:32
 import config
 import smtplib
 from email.mime.text import MIMEText
+import glob
+import os
 
 
 mail_config = config.mail_config
@@ -30,4 +32,17 @@ def sendmail(sbj, content,
     s.starttls()
     s.login(username, pwd)
     s.sendmail(fromwhom, towhom, msg.as_string())
+
+
+def detect(base, year, month, day):
+    """检测指定base目录下的某天的文件是否齐全"""
+    kwargs = {'year': year, 'month': month, 'day': day}
+    f_name = '{year}-{month:02d}-{day:02d}-*.json.gz'.format(**kwargs)
+    r1 = os.path.join(base, f_name)
+    r2 = '*.json.gz'
+    return len(glob.glob(r1)) == 24 and len(glob.glob(r2)) == 0
+
+
+
+
 

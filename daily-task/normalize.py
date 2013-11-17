@@ -166,14 +166,17 @@ class Normalizer(object):
                 self.webservice_result[arg] = result
 
         if alarm:
+            log.log('Go sleeping...')
             time.sleep(60 * 5)
+            log.log('Wake up!')
 
     def search(self, location):
         """greenlet，无论执行结果如何，参数location都做为返回结果的第一个参数返回"""
         params = {'maxRows': config.result_num, 'username': self.username, 'q': location}
         try:
             r = requests.get('http://api.geonames.org/searchJSON', params=params, timeout=10) # timeout = 10s
-        except ConnectionError: # Connection reset by peer
+        except ConnectionError, e: # Connection reset by peer
+            log.log('ConnectionError: %s' % str(e), log.ERROR)
             log.log('Fire in the hole: %s max request times exceed!' % self.username, log.WARNING)
             self.username = self.pickup_username()
             log.log('Username change to %s.' % self.username, log.WARNING)

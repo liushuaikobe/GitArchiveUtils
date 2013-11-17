@@ -102,5 +102,8 @@ def test13():
 def test14():
     util.sendmail('fuck', 'Test')
 
+def test15():
+    print util.detect('/Users/liushuai/Downloads/data/2013/11/3', 2013, 11, 3)
+
 if __name__ == '__main__':
-    test14()
+    test15()
