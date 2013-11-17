@@ -43,7 +43,7 @@ def main(p):
 
             record_cleaner = Cleaner()
             record_grouper = Grouper(db)
-            record_normalizer = Normalizer()
+            record_normalizer = Normalizer(db)
             mongo_helper = MongoHelper(db)
             evaluater = Evaluater()
 

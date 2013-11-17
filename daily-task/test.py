@@ -12,6 +12,7 @@ monkey.patch_all()
 import gevent
 import requests
 import decorator
+import util
 
 
 def foo(o):
@@ -83,7 +84,7 @@ def test10():
     10 / 0
 
 def test12_onError():
-    
+    pass
 
 def test11():
     try:
@@ -92,5 +93,14 @@ def test11():
     except Exception, e:
         print 'liushuaikobe~~!!'
 
+def test13():
+    try:
+        1 / 0
+    except Exception, e:
+        return 'lskobe'
+
+def test14():
+    util.sendmail('fuck', 'Test')
+
 if __name__ == '__main__':
-    test11()
+    test14()

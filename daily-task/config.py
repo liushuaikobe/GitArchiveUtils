@@ -40,6 +40,15 @@ log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log.txt')
 data_base = '/home/liushuai/data'
 # data_base = '/Users/liushuai/Downloads/data'
 
+# 邮件相关
+mail_config = {
+    'from': 'gitradar@163.com',
+    'to': 'liushuaikobe@gmail.com',
+    'server': 'smtp.163.com',
+    'username': 'gitradar',
+    'pwd': 'footoo!@#$'
+}
+
 # 计算价值相关
 credit = {
     'IssuesEvent': 0.1,
