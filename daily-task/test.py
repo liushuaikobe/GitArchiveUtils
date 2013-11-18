@@ -105,5 +105,13 @@ def test14():
 def test15():
     print util.detect('/Users/liushuai/Downloads/data/2013/11/3', 2013, 11, 3)
 
+def test16():
+    requests.get('https://github.com', timeout=0.001)
+
+def test17():
+    greenlet = gevent.spawn(test10)
+    greenlet.join()
+    print type(greenlet.exception)
+
 if __name__ == '__main__':
-    test15()
+    test17()

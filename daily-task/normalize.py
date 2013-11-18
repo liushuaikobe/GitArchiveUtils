@@ -17,6 +17,7 @@ import log
 import decorator
 import database
 import util
+import time
 from functools import partial
 from cache import LocationCache
 from requests.exceptions import RequestException, ConnectionError
@@ -114,7 +115,13 @@ class Normalizer(object):
         # 调用Web Service出现异常的location，再次尝试规范化
         log.log('Retry Failed Location...%s total.' % len(self.failed_locations))
 
-        self.invoke_webservice_task(self.failed_locations, final=True)
+        locations = list(self.failed_locations)
+
+        i = 0
+        while i < len(locations):
+            self.invoke_webservice_task(locations[i:i + self.greenlet_num], final=True)
+            log.log('%.2f%% finished.' % (float(i) / float(len(locations)) * 100))
+            i += self.greenlet_num
 
         log.log('Retry Finished.')
 
@@ -150,24 +157,33 @@ class Normalizer(object):
         gevent.joinall(greenlets)
 
         alarm = False
+        should_change_uname = False
+
         for greenlet in greenlets:
             arg = greenlet.value[0] # arg为传进该greenlet的参数(待规范化的location)
             result = greenlet.value[1]
 
             if result == -1: # 该greenlet未正常执行
                 alarm = True
+                if isinstance(greenlet.exception, ConnectionError): # 这批greenlet中出现了ConnectionError
+                    should_change_uname = True
                 if final: # 如果final参数被置为True，则出异常后直接将异常location在self.webservice_cache对应的记录插入到数据库中
                     exception_records = [self.records[i] for i in self.webservice_cache[arg]]
                     self.db.exception[arg].insert(exception_records)
-                    util.sendmail('Exception', '%s records did not be handled right.')
+                    util.sendmail('Exception', '%s records did not be handled right.' % len(exception_records))
                 else:
+                    log.log('Greenlet with %s end up with an error.' % arg)
                     self.failed_locations.add(arg)
             else: # 该greenlet正常得到了结果
                 self.webservice_result[arg] = result
 
+        if should_change_uname:
+            log.log('Fire in the hole: %s max request times exceed!' % self.username, log.WARNING)
+            self.username = self.pickup_username()
+            log.log('Username change to %s.' % self.username, log.WARNING)
         if alarm:
             log.log('Go sleeping...')
-            time.sleep(60 * 5)
+            time.sleep(60 * 3)
             log.log('Wake up!')
 
     def search(self, location):
@@ -177,11 +193,9 @@ class Normalizer(object):
             r = requests.get('http://api.geonames.org/searchJSON', params=params, timeout=10) # timeout = 10s
         except ConnectionError, e: # Connection reset by peer
             log.log('ConnectionError: %s' % str(e), log.ERROR)
-            log.log('Fire in the hole: %s max request times exceed!' % self.username, log.WARNING)
-            self.username = self.pickup_username()
-            log.log('Username change to %s.' % self.username, log.WARNING)
             return location, -1
-        except RequestException:
+        except RequestException, e:
+            log.log('RequestException: %s' % str(e), log.ERROR)
             return location, -1 # 第二个返回值是-1表示该greenlet异常
         try:
             e = ujson.loads(r.text)['geonames'][0]

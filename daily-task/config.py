@@ -11,7 +11,7 @@ import os
 
 
 # debug
-debug = True
+debug = False
 
 # 能被称之为贡献的记录类型
 contribution_type = ('IssuesEvent', 'PullRequestEvent', 'PushEvent')
@@ -37,7 +37,7 @@ redis_prefix = 'gitradar'
 log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log.txt')
 
 # 数据保存的位置
-data_base = '/home/liushuai/data'
+data_base = '/home/footoo/githubradar/data'
 # data_base = '/Users/liushuai/Downloads/data'
 
 # 邮件相关

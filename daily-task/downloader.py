@@ -69,7 +69,7 @@ def fetch_yesterday():
             for n in range(24)]
     gevent.joinall(jobs)
     if not util.detect(data_dir, year, month, day):
-        util.sendmail('Download Error', '\n'.join(os.listdir(data_dir) + '\nFound In Target Dir.'))
+        util.sendmail('Download Error', '\n'.join(os.listdir(data_dir)) + '\nFound In Target Dir.')
 
 if __name__ == "__main__":
     fetch_yesterday()
