@@ -136,18 +136,16 @@ class Normalizer(object):
         for location in self.webservice_cache:
             try:
                 regular_location = self.webservice_result[location]
+                if regular_location == None:
+                    self.process_trick_actor(self.webservice_cache[location])
+                else:
+                    self.process_good_actor(self.webservice_cache[location], regular_location)
             except KeyError: # 出现了KeyError说明，该location由于某种异常未能正确解析出结果
                 assert(location in self.failed_locations) # 那么可以断言，该location一定在self.failed_locations中
                 # 由于未能解析出结果的location对应的记录已经被插入到异常数据库
                 log.log('Get KeyError!')
                 for i in self.webservice_cache[location]:
                     del self.records[i]
-                continue
-
-            if regular_location == None:
-                self.process_trick_actor(self.webservice_cache[location])
-            else:
-                self.process_good_actor(self.webservice_cache[location], regular_location)
 
     def invoke_webservice_task(self, locations, final=False):
         """利用Python的协程技术将locations中的地名通过Web Sservice得到其规范化的信息，
