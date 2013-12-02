@@ -26,7 +26,7 @@ greenlet_num = 40
 
 # 解析地名相关
 result_num = 1 # 从服务器取回的结果条数
-username = ('liushuaikobe','lskobe', 'lskobeqq')
+username = 'liushuaikobe'
 
 # 缓存保存的位置
 redis_addr = '172.16.0.1'

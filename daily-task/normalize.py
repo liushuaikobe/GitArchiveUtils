@@ -18,9 +18,10 @@ import decorator
 import database
 import util
 import time
+import datetime
 from functools import partial
 from cache import LocationCache
-from requests.exceptions import RequestException, ConnectionError
+from requests.exceptions import RequestException, ConnectionError, Timeout
 
 
 class Normalizer(object):
@@ -36,8 +37,7 @@ class Normalizer(object):
         self.cache = LocationCache() # 地名缓存对象
         self.webservice_cache = {}  # 对记录按着地名归档后的结果，{'Hangzhou': [1, 2, 3], 'BeiJing': [5, 7, 8]}
 
-        self.uname_desperate = [] # 已经被用过的Geonames的用户名
-        self.username = self.pickup_username() # 当前Geonames的用户名
+        self.username = config.username # 当前Geonames的用户名
 
         self.trick_record_indices = [] # 地名信息规范化没有结果的记录的下标
 
@@ -136,10 +136,14 @@ class Normalizer(object):
         for location in self.webservice_cache:
             try:
                 regular_location = self.webservice_result[location]
-                if regular_location == None:
-                    self.process_trick_actor(self.webservice_cache[location])
-                else:
-                    self.process_good_actor(self.webservice_cache[location], regular_location)
+                try:
+                    if regular_location == None:
+                        self.process_trick_actor(self.webservice_cache[location])
+                    else:
+                        self.process_good_actor(self.webservice_cache[location], regular_location)
+                except KeyError:
+                    log.log('Hope this will never happen.')
+                    raise e
             except KeyError: # 出现了KeyError说明，该location由于某种异常未能正确解析出结果
                 assert(location in self.failed_locations) # 那么可以断言，该location一定在self.failed_locations中
                 # 由于未能解析出结果的location对应的记录已经被插入到异常数据库
@@ -155,30 +159,23 @@ class Normalizer(object):
         gevent.joinall(greenlets)
 
         alarm = False
-        should_change_uname = False
 
         for greenlet in greenlets:
             arg = greenlet.value[0] # arg为传进该greenlet的参数(待规范化的location)
             result = greenlet.value[1]
 
-            if result == -1: # 该greenlet未正常执行
+            if result != -1: # 该greenlet正常得到了结果
+                self.webservice_result[arg] = result
+            else: # 该greenlet未正常执行
                 alarm = True
-                if isinstance(greenlet.exception, ConnectionError): # 这批greenlet中出现了ConnectionError
-                    should_change_uname = True
                 if final: # 如果final参数被置为True，则出异常后直接将异常location在self.webservice_cache对应的记录插入到数据库中
                     exception_records = [self.records[i] for i in self.webservice_cache[arg]]
-                    self.db.exception[arg].insert(exception_records)
+                    self.db.exception[datetime.datetime.now().strftime('%Y-%m-%d')].insert(exception_records)
                     util.sendmail('Exception', '%s records did not be handled right.' % len(exception_records))
                 else:
-                    log.log('Greenlet with %s end up with an error.' % arg)
+                    log.log('Greenlet with %s end up with an error, %s records in webservice_cache.' % 
+                        (arg, len(self.webservice_cache[arg])))
                     self.failed_locations.add(arg)
-            else: # 该greenlet正常得到了结果
-                self.webservice_result[arg] = result
-
-        if should_change_uname:
-            log.log('Fire in the hole: %s max request times exceed!' % self.username, log.WARNING)
-            self.username = self.pickup_username()
-            log.log('Username change to %s.' % self.username, log.WARNING)
         if alarm:
             log.log('Go sleeping...')
             time.sleep(60 * 3)
@@ -190,10 +187,13 @@ class Normalizer(object):
         try:
             r = requests.get('http://api.geonames.org/searchJSON', params=params, timeout=10) # timeout = 10s
         except ConnectionError, e: # Connection reset by peer
-            log.log('ConnectionError: %s' % str(e), log.ERROR)
+            log.log('ConnectionError=。=: %s' % str(e), log.ERROR)
+            return location, -1
+        except Timeout, e: # 网速慢等原因导致的超时
+            log.log('Requests Timeout=。=: %s' % str(e), log.ERROR)
             return location, -1
         except RequestException, e:
-            log.log('RequestException: %s' % str(e), log.ERROR)
+            log.log('RequestException=。=: %s' % str(e), log.ERROR)
             return location, -1 # 第二个返回值是-1表示该greenlet异常
         try:
             e = ujson.loads(r.text)['geonames'][0]
@@ -208,16 +208,6 @@ class Normalizer(object):
         except (KeyError, IndexError):
             regular_location = None
         return location, regular_location
-
-
-    def pickup_username(self):
-        """找到一个可以用的Geoname用户名"""
-        for u in config.username:
-            if u not in self.uname_desperate:
-                self.uname_desperate.append(u)
-                return u
-        del self.uname_desperate[1:]
-        return self.uname_desperate[0]
 
     @decorator._log('Normalizing...', 'Normalizing finished.')
     def normalize(self):
