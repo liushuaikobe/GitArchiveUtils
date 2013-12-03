@@ -4,12 +4,13 @@
         <meta http-equiv="content-type" content="text/html; charset=utf-8">
         <title>Git Radar</title>
 
-        <link rel="stylesheet" type="text/css" href="{{ static_url("normalize.css") }}">
+        <link rel="stylesheet" type="text/css" href="{{ static_url("packaged/css/semantic.css") }}">
+        <link rel="stylesheet" type="text/css" href="{{ static_url("css/gitradar.css") }}">
     </head>
     <body>
-        <div class="container">
-            {% block content%}{% end %}
-        </div>
+    <div>
+        {% block content%}{% end %}
+    </div>
 
         
     </body>
