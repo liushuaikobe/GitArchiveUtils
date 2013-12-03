@@ -18,8 +18,6 @@ import decorator
 import database
 import util
 import time
-import datetime
-from functools import partial
 from cache import LocationCache
 from requests.exceptions import RequestException, ConnectionError, Timeout
 
@@ -169,7 +167,7 @@ class Normalizer(object):
                 alarm = True
                 if final: # 如果final参数被置为True，则出异常后直接将异常location在self.webservice_cache对应的记录插入到数据库中
                     exception_records = [self.records[i] for i in self.webservice_cache[arg]]
-                    self.db.exception[datetime.datetime.now().strftime('%Y-%m-%d')].insert(exception_records)
+                    self.db.exception.insert(exception_records)
                     util.sendmail('Exception', '%s records did not be handled right.' % len(exception_records))
                 else:
                     log.log('Greenlet with %s end up with an error, %s records in webservice_cache.' % 
