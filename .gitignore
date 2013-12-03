@@ -1,6 +1,6 @@
 *.py[cod]
 .DS_Store
-log.txt
+log*.txt
 location.txt
 
 # C extensions
