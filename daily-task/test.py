@@ -1,9 +1,18 @@
 # -*- coding: utf-8 -*-
+'''
+Created on 2013-11-05 20:39:05
+
+@author: liushuai
+@email: liushuaikobe@gmail.com
+@last modified by: liushuai
+@last modified on: 2013-11-13 14:53:55
+'''
 from gevent import monkey
 monkey.patch_all()
 import gevent
 import requests
-import utils
+import decorator
+import util
 
 
 def foo(o):
@@ -58,12 +67,51 @@ def test6():
         gevent.joinall(jobs)
         print '%s passed.' % j 
 
+@decorator._log('fuck', 'haha')
+def test7():
+    print 'in test7'
 
-def main():
-    for i in range(100):
-        jobs = [gevent.spawn(utils.search_geo, i) for i in ['Harbin', 'Shanghai', 'haha', 'fuck', 'hangzhou', 'Los Angeles', 'DC', 'AB', 'Beijing', 'Nanjing']]
+def test8():
+    return 2 / 0
+
+def test9():
+    try:
+        test8()
+    except Exception, e:
+        print 'fuckkk...'
+
+def test10():
+    10 / 0
+
+def test12_onError():
+    pass
+
+def test11():
+    try:
+        jobs = [gevent.spawn_link_exception(test10) for _ in range(10)]
         gevent.joinall(jobs)
+    except Exception, e:
+        print 'liushuaikobe~~!!'
 
+def test13():
+    try:
+        1 / 0
+    except Exception, e:
+        return 'lskobe'
+
+def test14():
+    util.sendmail('fuck', 'Test')
+
+def test15():
+    print util.detect('/Users/liushuai/Downloads/data/2013/11/3', 2013, 11, 3)
+
+def test16():
+    requests.get('https://github.com', timeout=0.001)
+
+def test17():
+    greenlet = gevent.spawn(test10)
+    greenlet.join()
+    print type(greenlet.exception)
 
 if __name__ == '__main__':
-    test5()
+    test17()

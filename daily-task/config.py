@@ -1,34 +1,53 @@
 # -*- coding: utf-8 -*-
+'''
+Created on 2013-11-13 14:15:52
+
+@author: liushuai
+@email: liushuaikobe@gmail.com
+@last modified by: liushuai
+@last modified on: 2013-11-13 18:51:23
+'''
 import os
 
 
 # debug
-debug = True
+debug = False
 
 # 能被称之为贡献的记录类型
 contribution_type = ('IssuesEvent', 'PullRequestEvent', 'PushEvent')
 
 # 数据库相关
-db_addr = 'localhost'
+db_addr = '172.16.0.1'
 db_port = 27017
-db = 'sep'
+db = 'op_test'
 
 # 协程相关
 greenlet_num = 40
 
 # 解析地名相关
 result_num = 1 # 从服务器取回的结果条数
-username = ('liushuaikobe','lskobe', 'lskobeqq')
+username = 'liushuaikobe'
 
 # 缓存保存的位置
-cache_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'location.txt')
+redis_addr = '172.16.0.1'
+redis_port = 6379
+redis_prefix = 'gitradar'
 
 # 日志的位置
 log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log.txt')
 
 # 数据保存的位置
-data_base = '/home/liushuai/data'
+data_base = '/home/footoo/githubradar/data'
 # data_base = '/Users/liushuai/Downloads/data'
+
+# 邮件相关
+mail_config = {
+    'from': 'gitradar@163.com',
+    'to': 'liushuaikobe@gmail.com',
+    'server': 'smtp.163.com',
+    'username': 'gitradar',
+    'pwd': 'footoo!@#$'
+}
 
 # 计算价值相关
 credit = {

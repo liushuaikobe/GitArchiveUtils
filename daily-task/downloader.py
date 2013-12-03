@@ -1,14 +1,22 @@
 # -*- coding: utf-8 -*-
-import gevent
+'''
+Created on 2013-11-05 20:39:05
+
+@author: liushuai
+@email: liushuaikobe@gmail.com
+@last modified by: liushuai
+@last modified on: 2013-11-13 14:16:49
+'''
 from gevent import monkey
 monkey.patch_all()
-
+import gevent
 import os
 import shutil
 import requests
 import datetime
 import config
 import log
+import util
 from itertools import product
 from tempfile import NamedTemporaryFile
 
@@ -60,6 +68,8 @@ def fetch_yesterday():
     jobs = [gevent.spawn(fetch, year, month, day, n)
             for n in range(24)]
     gevent.joinall(jobs)
+    if not util.detect(data_dir, year, month, day):
+        util.sendmail('Download Error', '\n'.join(os.listdir(data_dir)) + '\nFound In Target Dir.')
 
 if __name__ == "__main__":
     fetch_yesterday()
