@@ -2,12 +2,13 @@
     font-size: 100px;
     font-family: 'Nixie One', cursive;
     text-align: center;
-    margin-top: 100px;
+    margin-top: 50px;
 }
 
-.mysearch {
-    margin-top: 150px;
+#map {
+    margin-top: 50px;
     margin-left: auto;
     margin-right: auto;
-    width:800px;  
+    width: 80%;
+    height: 1000px;
 }

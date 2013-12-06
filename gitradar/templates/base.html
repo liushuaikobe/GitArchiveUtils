@@ -6,12 +6,12 @@
 
         <link rel="stylesheet" type="text/css" href="{{ static_url("packaged/css/semantic.css") }}">
         <link rel="stylesheet" type="text/css" href="{{ static_url("css/gitradar.css") }}">
+        {% block js %}{% end %}
     </head>
     <body>
     <div>
         {% block content%}{% end %}
     </div>
-
-        
     </body>
+    {% block js_embed %}{% end %}
 </html>

@@ -1,22 +1,18 @@
 {% extends "./base.html" %}
 
-{% block content %}
-    <div class="title">Git Radar</div>
-    <form method="post" action="">
-        <div class="ui massive left icon input mysearch">
-            <input type="text" placeholder="Search locations..." id="location" name="location">
-            <i class="map marker icon"></i>
-        </div>
-    </form>
-
-{% if actors %}
-<ul>
-    {% for actor in actors %}
-        <li>
-            <a href="/report/{{ actor['login'] }}">{{ actor['login'] }}</a>({{ actor.get('name', 'null') }})&nbsp;{{ actor['val'] }}
-        </li>
-    {% end %}
-</ul>
+{% block js %}
+<script src="http://webapi.amap.com/maps?v=1.2&key=27d25e5383a7166d421bce70ee5f9cd9" type="text/javascript"></script>    
+<meta name="viewport" content="initial-scale=1.1, user-scalable=no" /> 
 {% end %}
 
+{% block content %}
+    <div class="title">Git Radar</div>
+    <div id="map"></div>
+{% end %}
+
+{% block js_embed %}
+<script type="text/javascript">
+    var position=new AMap.LngLat(116.404,39.915);
+    var mapObj=new AMap.Map("map",{center:position});
+</script>
 {% end %}
