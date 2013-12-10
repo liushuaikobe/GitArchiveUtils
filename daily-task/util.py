@@ -1,12 +1,4 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 2013-11-17 13:34:32
-
-@author: liushuai
-@email: liushuaikobe@gmail.com
-@last modified by: liushuai
-@last modified on: 2013-11-17 13:34:32
-'''
 import config
 import smtplib
 from email.mime.text import MIMEText

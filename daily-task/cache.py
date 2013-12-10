@@ -1,32 +1,15 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 2013-11-13 17:23:13
-
-@author: liushuai
-@email: liushuaikobe@gmail.com
-@last modified by: liushuai
-@last modified on: 2013-11-13 20:37:25
-'''
 import redis
-import config
+
 import log
+import config
+from database import get_redis_pipeline
 
 
 class Cache(object):
     """缓存的基类"""
-    redis_pool = None
-
     def __init__(self):
-        self.pipe = self.get_pipeline() # 获取Redis的pipeline
-
-    def get_connection(self):
-        if Cache.redis_pool is None:
-            Cache.redis_pool = redis.ConnectionPool(host=config.redis_addr, port=config.redis_port)
-        return redis.Redis(connection_pool=Cache.redis_pool)
-
-    def get_pipeline(self):
-        r = self.get_connection()
-        return r.pipeline(transaction=False)
+        self.pipe = get_redis_pipeline() # 获取Redis的pipeline
 
     def get(self, key):
         return self.pipe.get(self.format_key(key))
@@ -89,10 +72,3 @@ class LocationCache(Cache):
     def set_hit_result(self):
         """将缓存的命中情况更新到数据库"""
         pass
-
-
-
-
-
-
-

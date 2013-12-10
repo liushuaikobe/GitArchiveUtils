@@ -1,12 +1,4 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 2013-11-13 14:15:45
-
-@author: liushuai
-@email: liushuaikobe@gmail.com
-@last modified by: liushuai
-@last modified on: 2013-11-13 15:04:13
-'''
 import config
 import ujson
 import decorator

@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 2013-11-14 16:11:44
+import redis
 
-@author: liushuai
-@email: liushuaikobe@gmail.com
-@last modified by: liushuai
-@last modified on: 2013-11-14 16:11:44
-'''
 import decorator
+import config
+
 
 class MongoHelper(object):
     def __init__(self, db):
@@ -36,3 +32,17 @@ class MongoHelper(object):
         for actor in actor_val:
             self.db.actor.update({"login": actor}, {"$inc": {"val": actor_val[actor]}})
 
+
+redis_pool = None
+
+
+def get_redis_connection():
+    global redis_pool
+    if redis_pool is None:
+        redis_pool = redis.ConnectionPool(host=config.redis_addr, port=config.redis_port)
+    return redis.Redis(connection_pool=redis_pool)
+
+
+def get_redis_pipeline():
+    r = get_redis_connection()
+    return r.pipeline(transaction=False)

@@ -1,12 +1,4 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 2013-11-13 14:15:52
-
-@author: liushuai
-@email: liushuaikobe@gmail.com
-@last modified by: liushuai
-@last modified on: 2013-11-13 18:51:23
-'''
 import os
 
 
@@ -17,7 +9,7 @@ debug = False
 contribution_type = ('IssuesEvent', 'PullRequestEvent', 'PushEvent')
 
 # 数据库相关
-db_addr = '172.16.0.1'
+db_addr = '127.0.0.1'
 db_port = 27017
 db = 'op_test'
 
@@ -29,15 +21,17 @@ result_num = 1 # 从服务器取回的结果条数
 username = 'liushuaikobe'
 
 # 缓存保存的位置
-redis_addr = '172.16.0.1'
+redis_addr = '127.0.0.1'
 redis_port = 6379
 redis_prefix = 'gitradar'
+redis_count_prefix = 'grcount'
 
 # 日志的位置
 log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log.txt')
 
 # 数据保存的位置
-data_base = '/home/footoo/githubradar/data'
+data_base = '/root/data'
+# data_base = '/home/footoo/githubradar/data'
 # data_base = '/Users/liushuai/Downloads/data'
 
 # 邮件相关
