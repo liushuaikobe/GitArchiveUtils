@@ -42,8 +42,8 @@ class ActorCounter(Counter):
         lng = actor['location']['lng']
 
         self.inc(infix, 'count', execute_right_now)
-        self.set(infix, 'lat', lat, execute_right_now)
-        self.set(infix, 'lng', lng, execute_right_now)
+        self.set_val(infix, 'lat', lat, execute_right_now)
+        self.set_val(infix, 'lng', lng, execute_right_now)
 
     @decorator._log('Count new actor...', 'Finished.')
     def count_actor_list(self, actor_list):
