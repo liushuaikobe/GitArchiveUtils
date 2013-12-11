@@ -6,9 +6,9 @@ from database import get_redis_pipeline
 
 class Counter(object):
     """Redis计数器"""
-    def __init__(self):
+    def __init__(self, prefix=config.redis_count_prefix):
         self.pipe = get_redis_pipeline()
-        self.prefix = config.redis_count_prefix
+        self.prefix = prefix
 
     def build_key(self, infix, suffix):
         return ':'.join((self.prefix, infix, suffix))
@@ -16,6 +16,12 @@ class Counter(object):
     def inc(self, infix, suffix, execute_right_now=True):
         """将 self.prefix:infix:suffix 的值加1"""
         self.pipe.incr(self.build_key(infix, suffix))
+        if execute_right_now:
+            self.execute()
+
+    def inc_n(self, infix, suffix, n=1, execute_right_now=True):
+        """将 self.prefix:infix:suffix 的值加n"""
+        self.pipe.incr(self.build_key(infix, suffix), n)
         if execute_right_now:
             self.execute()
 

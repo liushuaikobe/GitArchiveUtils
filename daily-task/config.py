@@ -25,6 +25,7 @@ redis_addr = '127.0.0.1'
 redis_port = 6379
 redis_prefix = 'gitradar'
 redis_count_prefix = 'grcount'
+redis_info_prefix = 'grinfo'
 
 # 日志的位置
 log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log.txt')

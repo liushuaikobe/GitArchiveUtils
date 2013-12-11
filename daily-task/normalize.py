@@ -206,6 +206,7 @@ class Normalizer(object):
         self.archive_by_location()
         self.process()
         self.clean_trick_records()
+        self.cache.set_hit_result()
 
     def get_new_actors(self):
         return self.new_actors
