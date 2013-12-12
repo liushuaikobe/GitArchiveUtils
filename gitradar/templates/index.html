@@ -3,6 +3,14 @@
 {% block js %}
 <script src="http://webapi.amap.com/maps?v=1.2&key=27d25e5383a7166d421bce70ee5f9cd9" type="text/javascript"></script>    
 <meta name="viewport" content="initial-scale=1.1, user-scalable=no" /> 
+<style type="text/css">
+    <!--
+        .info {
+            width: 100px;
+            height: 100px;
+        }
+    -->
+</style>
 {% end %}
 
 {% block content %}
@@ -12,7 +20,68 @@
 
 {% block js_embed %}
 <script type="text/javascript">
-    var position=new AMap.LngLat(116.404,39.915);
-    var mapObj=new AMap.Map("map",{center:position});
+    var mapObj = new AMap.Map("map", {center:new AMap.LngLat(116.481181,39.989792),level:13});
+
+    addMarker(116.481181,39.989792);
+
+    // 添加窗体
+    function addMarker(lng, lat) {
+        mapObj.clearMap();
+        var marker = new AMap.Marker({
+            map: mapObj,
+            position: new AMap.LngLat(lng, lat),
+            icon: 'http://webapi.amap.com/images/0.png'
+        });
+        AMap.event.addListener(marker, 'click', function() {
+            infoWindow.open(mapObj, marker.getPosition());
+        });
+    }
+
+    var infoWindow = new AMap.InfoWindow({
+        isCustom: true,
+        content: createInfoWindow('fuck', 'liushuaikobe'),
+        size: new AMap.Size(300, 0),
+        offset: new AMap.Pixel(0, -50)
+    });
+
+    function createInfoWindow(title, content){
+        var info = document.createElement("div");
+        info.className = "info";
+
+        // 顶部标题
+        var top = document.createElement("div");
+        top.className = "info-top";
+        var titleD = document.createElement("div");
+        titleD.innerHTML = title;
+        var closeX  = document.createElement("img");
+        closeX.src = "http://webapi.amap.com/images/close2.gif";
+        closeX.onClick = closeInfoWindow;
+
+        top.appendChild(titleD);
+        top.appendChild(closeX);
+
+        info.appendChild(top);
+
+        // 中间内容
+        var middle = document.createElement("div");
+        middle.className = "info-middle";
+        middle.innerHTML = content;
+
+        info.appendChild(middle);
+
+        // 底部内容
+        var bottom = document.createElement("div");
+        bottom.className = "info-bottom";
+        var sharp = document.createElement("img");
+        sharp.src = "http://webapi.amap.com/images/sharp.png";
+        bottom.appendChild(sharp);
+
+        info.appendChild(bottom);
+    }
+
+    // 关闭信息窗体
+    function closeInfoWindow() {
+        mapObj.clearInfoWindow();
+    }
 </script>
 {% end %}
