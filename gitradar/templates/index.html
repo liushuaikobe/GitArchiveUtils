@@ -6,8 +6,13 @@
 <style type="text/css">
     <!--
         .info {
-            width: 100px;
-            height: 100px;
+            position: relative;
+            z-index: 100;
+            border: 1px solid #BCBCBC;
+            box-shadow: 0 0 10px #B7B6B6;
+            border-radius: 8px;
+            background-color: rgba(255,255,255,0.9);
+            transition-duration: 0.25s;
         }
     -->
 </style>
@@ -39,44 +44,25 @@
 
     var infoWindow = new AMap.InfoWindow({
         isCustom: true,
-        content: createInfoWindow('fuck', 'liushuaikobe'),
+        content: createInfoWindow("liushuaikobe"),
         size: new AMap.Size(300, 0),
         offset: new AMap.Pixel(0, -50)
     });
 
-    function createInfoWindow(title, content){
+    function createInfoWindow(content){
         var info = document.createElement("div");
         info.className = "info";
 
-        // 顶部标题
-        var top = document.createElement("div");
-        top.className = "info-top";
-        var titleD = document.createElement("div");
-        titleD.innerHTML = title;
-        var closeX  = document.createElement("img");
+        info.innerHTML = content;
+
+        // 关闭按钮
+        var closeX = document.createElement("img");
         closeX.src = "http://webapi.amap.com/images/close2.gif";
-        closeX.onClick = closeInfoWindow;
+        closeX.onclick = closeInfoWindow;
 
-        top.appendChild(titleD);
-        top.appendChild(closeX);
+        info.appendChild(closeX);
 
-        info.appendChild(top);
-
-        // 中间内容
-        var middle = document.createElement("div");
-        middle.className = "info-middle";
-        middle.innerHTML = content;
-
-        info.appendChild(middle);
-
-        // 底部内容
-        var bottom = document.createElement("div");
-        bottom.className = "info-bottom";
-        var sharp = document.createElement("img");
-        sharp.src = "http://webapi.amap.com/images/sharp.png";
-        bottom.appendChild(sharp);
-
-        info.appendChild(bottom);
+        return info;
     }
 
     // 关闭信息窗体
