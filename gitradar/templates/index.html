@@ -25,9 +25,18 @@
 
 {% block js_embed %}
 <script type="text/javascript">
-    var mapObj = new AMap.Map("map", {center:new AMap.LngLat(116.481181,39.989792),level:13});
+    var mapObj = new AMap.Map("map", {level:2});
 
-    addMarker(116.481181,39.989792);
+    {% for (lat, lng) in locations %}
+        console.log({{ lat }} + " => " + {{ lng }});
+        var infoWindow = new AMap.InfoWindow({
+            isCustom: true,
+            content: createInfoWindow("liushuaikobe"),
+            size: new AMap.Size(300, 0),
+            offset: new AMap.Pixel(0, -50)
+        });
+        addMarker({{ lat }}, {{ lng }});
+    {% end %}
 
     // 添加窗体
     function addMarker(lng, lat) {
@@ -41,13 +50,6 @@
             infoWindow.open(mapObj, marker.getPosition());
         });
     }
-
-    var infoWindow = new AMap.InfoWindow({
-        isCustom: true,
-        content: createInfoWindow("liushuaikobe"),
-        size: new AMap.Size(300, 0),
-        offset: new AMap.Pixel(0, -50)
-    });
 
     function createInfoWindow(content){
         var info = document.createElement("div");
