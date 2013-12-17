@@ -1,12 +1,13 @@
 {% extends "./base.html" %}
 
 {% block content %}
-<div id="search">
-    <div id="title">Git Radar</div>
+    <div class="title">Git Radar</div>
     <form method="post" action="">
-        <input type="text" id="location" name="location">
+        <div class="ui massive left icon input mysearch">
+            <input type="text" placeholder="Search locations..." id="location" name="location">
+            <i class="map marker icon"></i>
+        </div>
     </form>
-</div>
 
 {% if actors %}
 <ul>

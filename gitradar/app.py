@@ -9,7 +9,7 @@ from handlers.report import ReportHandler
 
 
 parse_config_file('config.py')
-db = motor.MotorClient('172.16.0.1', 27017).open_sync().sep
+db = motor.MotorClient('172.16.0.1', 27017).open_sync().op_test
 
 handlers = [
     (r'/', IndexHandler),
