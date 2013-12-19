@@ -61,6 +61,3 @@ class WhooshUtil(object):
     def commit(self):
         self.writer.commit()
         
-
-
-

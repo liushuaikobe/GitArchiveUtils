@@ -14,21 +14,21 @@ class IndexHandler(RequestHandler):
     @asynchronous
     @gen.coroutine
     def get(self):
-        keys = yield gen.Task(c.keys, pattern='grcount:San Fran*:lng')
-        locations = []
-        pipe = c.pipeline()
-        for key in keys:
-            base = key[:key.rfind(':')]
+        # keys = yield gen.Task(c.keys, pattern='grcount:San Fran*:lng')
+        # locations = []
+        # pipe = c.pipeline()
+        # for key in keys:
+        #     base = key[:key.rfind(':')]
 
-            pipe.get(':'.join((base, 'lng')))
-            pipe.get(':'.join((base, 'lat')))
+        #     pipe.get(':'.join((base, 'lng')))
+        #     pipe.get(':'.join((base, 'lat')))
 
-            lng, lat = yield gen.Task(pipe.execute)
+        #     lng, lat = yield gen.Task(pipe.execute)
 
-            locations.append((lng, lat))
-        print locations
+        #     locations.append((lng, lat))
+        # print locations
 
-        self.render('index.html', actors=None, locations=locations)
+        self.render('index.html', actors=None)
 
     @asynchronous
     @gen.coroutine
