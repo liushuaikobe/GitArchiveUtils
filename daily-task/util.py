@@ -4,7 +4,7 @@ import os
 
 import smtplib
 from email.mime.text import MIMEText
-import whoosh
+from whoosh import index
 from whoosh.fields import Schema, TEXT
 
 import config
@@ -49,7 +49,7 @@ class WhooshUtil(object):
         """建立location的Whoosh搜索索引"""
         if not os.path.exists(config.ix_path):
             os.mkdir(config.ix_path)
-        ix = whoosh.index.create_in(config.ix_path, self.schema)
+        ix = index.create_in(config.ix_path, self.schema)
         self.writer = ix.writer()
 
     def add_search_doc(self, location, rlocation, execute_right_now=True):
@@ -61,6 +61,3 @@ class WhooshUtil(object):
     def commit(self):
         self.writer.commit()
         
-
-
-

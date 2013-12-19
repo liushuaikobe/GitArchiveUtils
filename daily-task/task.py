@@ -17,6 +17,7 @@ from cleaner import Cleaner
 from group import Grouper
 from normalize import Normalizer
 from database import MongoHelper
+from count import ActorCounter
 from evaluate import Evaluater
 
 
@@ -40,6 +41,7 @@ def main(p):
             record_grouper = Grouper(db)
             record_normalizer = Normalizer(db)
             mongo_helper = MongoHelper(db)
+            counter = ActorCounter()
             evaluater = Evaluater()
 
             # 数据清洗
@@ -75,6 +77,9 @@ def main(p):
             # 把本地的今日新增的Actor更新到数据库
             actors = [new_actors[actor] for actor in new_actors]
             mongo_helper.insert_new_actors(actors)
+
+            # 对新增的Actor, 改变Redis中相应的计数
+            counter.count_actor_list(actors)
 
             # 计算每条记录的val
             evaluater.set_records(record_actor_exist)
