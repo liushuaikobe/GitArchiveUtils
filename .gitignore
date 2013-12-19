@@ -1,6 +1,7 @@
 *.py[cod]
 .DS_Store
 log*.txt
+*/ix/*
 
 # C extensions
 *.so
