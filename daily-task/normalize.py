@@ -14,6 +14,7 @@ import log
 import decorator
 import database
 import util
+from util import WhooshUtil
 from cache import LocationCache
 
 
@@ -37,6 +38,8 @@ class Normalizer(object):
         self.webservice_result = {} #  规范化结果
 
         self.failed_locations = set([]) # 调用Web Service失败的location
+
+        self.whoosh_util = WhooshUtil()
 
     def set_records(self, r):
         self.records = r
@@ -118,11 +121,15 @@ class Normalizer(object):
 
         log.log('Retry Finished.')
 
-
-        # 将来之不易的数据缓存
+        # 建立whoosh搜索索引
+        self.whoosh_util.build_whoosh_index()
         for r in self.webservice_result:
+            # 将来之不易的数据缓存
             self.cache.put_location(r, self.webservice_result[r], execute_right_now=False)
+            # 添加到whoosh搜索
+            self.whoosh_util.add_search_doc(r, self.webservice_result[r], execute_right_now=False)
         self.cache.execute()
+        self.whoosh_util.commit()
 
 
         # 根据Web Service的结果继续处理记录
