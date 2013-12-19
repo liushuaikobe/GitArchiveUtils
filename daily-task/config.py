@@ -36,7 +36,7 @@ data_base = '/root/data'
 # data_base = '/Users/liushuai/Downloads/data'
 
 # location搜索索引保存位置
-ix_path = ''
+ix_path = '/root/index'
 
 # 邮件相关
 mail_config = {

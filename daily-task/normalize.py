@@ -127,7 +127,8 @@ class Normalizer(object):
             # 将来之不易的数据缓存
             self.cache.put_location(r, self.webservice_result[r], execute_right_now=False)
             # 添加到whoosh搜索
-            self.whoosh_util.add_search_doc(r, self.webservice_result[r], execute_right_now=False)
+            if self.webservice_result[r]:
+                self.whoosh_util.add_search_doc(r, self.webservice_result[r]['name'], execute_right_now=False)
         self.cache.execute()
         self.whoosh_util.commit()
 
