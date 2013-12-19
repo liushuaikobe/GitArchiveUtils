@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 2013-11-14 16:11:44
-
-@author: liushuai
-@email: liushuaikobe@gmail.com
-@last modified by: liushuai
-@last modified on: 2013-11-14 16:11:44
-'''
 import decorator
+
 
 class MongoHelper(object):
     def __init__(self, db):

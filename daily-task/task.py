@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 2013-11-13 14:15:37
-
-@author: liushuai
-@email: liushuaikobe@gmail.com
-@last modified by: liushuai
-@last modified on: 2013-11-13 14:16:16
-'''
 from gevent import monkey
 monkey.patch_all()
-import gevent
+
 import gzip
 import sys
 import os
 import time
+
+import gevent
+from pymongo import MongoClient
+
 import config
 import log
 import downloader
@@ -22,7 +18,6 @@ from group import Grouper
 from normalize import Normalizer
 from database import MongoHelper
 from evaluate import Evaluater
-from pymongo import MongoClient
 
 
 client = MongoClient(config.db_addr, config.db_port)

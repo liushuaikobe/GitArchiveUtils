@@ -1,24 +1,19 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 2013-11-05 20:39:05
-
-@author: liushuai
-@email: liushuaikobe@gmail.com
-@last modified by: liushuai
-@last modified on: 2013-11-13 14:16:49
-'''
 from gevent import monkey
 monkey.patch_all()
-import gevent
+
 import os
 import shutil
-import requests
 import datetime
+from itertools import product
+from tempfile import NamedTemporaryFile
+
+import gevent
+import requests
+
 import config
 import log
 import util
-from itertools import product
-from tempfile import NamedTemporaryFile
 
 
 yesterday = datetime.date.today() - datetime.timedelta(days=1)

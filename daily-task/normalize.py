@@ -1,25 +1,20 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 2013-11-13 15:14:42
-
-@author: liushuai
-@email: liushuaikobe@gmail.com
-@last modified by: liushuai
-@last modified on: 2013-11-13 22:02:10
-'''
 from gevent import monkey
 monkey.patch_all()
+
+import time
+
 import gevent
 import requests
 import ujson
+from requests.exceptions import RequestException, ConnectionError, Timeout
+
 import config
 import log
 import decorator
 import database
 import util
-import time
 from cache import LocationCache
-from requests.exceptions import RequestException, ConnectionError, Timeout
 
 
 class Normalizer(object):

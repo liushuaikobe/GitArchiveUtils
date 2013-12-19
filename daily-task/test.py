@@ -1,14 +1,7 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 2013-11-05 20:39:05
-
-@author: liushuai
-@email: liushuaikobe@gmail.com
-@last modified by: liushuai
-@last modified on: 2013-11-13 14:53:55
-'''
 from gevent import monkey
 monkey.patch_all()
+
 import gevent
 import requests
 import decorator
