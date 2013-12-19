@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-import log
 import functools
+
+import log
+
 
 def _log(before_msg, after_msg):
     def actual_decorator(func):

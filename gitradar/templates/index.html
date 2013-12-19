@@ -20,7 +20,22 @@
 
 {% block content %}
     <div class="title">Git Radar</div>
-    <div id="map"></div>
+    <form method="post" action="">
+        <div class="ui massive left icon input mysearch">
+            <input type="text" placeholder="Search locations..." id="location" name="location">
+            <i class="map marker icon"></i>
+        </div>
+    </form>
+    <a class="index-foot" href="#">View Map</a>
+
+{% if actors %}
+<ul>
+    {% for actor in actors %}
+        <li>
+            <a href="/report/{{ actor['login'] }}">{{ actor['login'] }}</a>({{ actor.get('name', 'null') }})&nbsp;{{ actor['val'] }}
+        </li>
+    {% end %}
+</ul>
 {% end %}
 
 {% block js_embed %}

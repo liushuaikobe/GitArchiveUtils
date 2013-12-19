@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-import config
 import ujson
+
+import config
 import decorator
 
 

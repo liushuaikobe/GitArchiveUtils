@@ -5,6 +5,7 @@ import decorator
 import config
 
 
+
 class MongoHelper(object):
     def __init__(self, db):
         self.db = db

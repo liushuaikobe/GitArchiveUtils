@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 from gevent import monkey
 monkey.patch_all()
-import gevent
+
 import gzip
 import sys
 import os
 import time
+
+import gevent
+from pymongo import MongoClient
+
 import config
 import log
 import downloader
@@ -15,7 +19,6 @@ from normalize import Normalizer
 from database import MongoHelper
 from count import ActorCounter
 from evaluate import Evaluater
-from pymongo import MongoClient
 
 
 client = MongoClient(config.db_addr, config.db_port)
