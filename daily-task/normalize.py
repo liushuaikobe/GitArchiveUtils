@@ -121,16 +121,24 @@ class Normalizer(object):
 
         log.log('Retry Finished.')
 
+
         # 建立whoosh搜索索引
+        whoosh_doc_count = 0
         self.whoosh_util.build_whoosh_index()
+
         for r in self.webservice_result:
             # 将来之不易的数据缓存
             self.cache.put_location(r, self.webservice_result[r], execute_right_now=False)
-            # 添加到whoosh搜索
+
+            # 添加到whoosh文档
             if self.webservice_result[r]:
+                whoosh_doc_count += 1
                 self.whoosh_util.add_search_doc(r, self.webservice_result[r]['name'], execute_right_now=False)
+
         self.cache.execute()
         self.whoosh_util.commit()
+
+        log.log('Add whoosh docs: %s' % whoosh_doc_count)
 
 
         # 根据Web Service的结果继续处理记录
@@ -143,12 +151,12 @@ class Normalizer(object):
                     else:
                         self.process_good_actor(self.webservice_cache[location], regular_location)
                 except KeyError:
-                    log.log('Hope this will never happen.')
+                    log.log('Hope this will never happen.', log.ERROR)
                     raise e
             except KeyError: # 出现了KeyError说明，该location由于某种异常未能正确解析出结果
                 assert(location in self.failed_locations) # 那么可以断言，该location一定在self.failed_locations中
                 # 由于未能解析出结果的location对应的记录已经被插入到异常数据库
-                log.log('Get KeyError!')
+                log.log('Get KeyError!', log.ERROR)
                 self.process_trick_actor(self.webservice_cache[location])
 
     def invoke_webservice_task(self, locations, final=False):
@@ -158,16 +166,22 @@ class Normalizer(object):
         greenlets = [gevent.spawn(self.search, l) for l in locations]
         gevent.joinall(greenlets)
 
-        alarm = False
+        should_change_uname = False
 
         for greenlet in greenlets:
             arg = greenlet.value[0] # arg为传进该greenlet的参数(待规范化的location)
             result = greenlet.value[1]
 
-            if result != -1: # 该greenlet正常得到了结果
+            if result == -2: # 出现了rate limit的错误
+                should_change_uname = True
+                greenlet_success = False
+            elif result == -1: # 该greenlet未正常执行
+                greenlet_success = False
+            else: # 该greenlet正常得到了结果
                 self.webservice_result[arg] = result
-            else: # 该greenlet未正常执行
-                alarm = True
+                greenlet_success = True
+
+            if not greenlet_success:
                 if final: # 如果final参数被置为True，则出异常后直接将异常location在self.webservice_cache对应的记录插入到数据库中
                     exception_records = [self.records[i] for i in self.webservice_cache[arg]]
                     self.db.exception.insert(exception_records)
@@ -176,14 +190,14 @@ class Normalizer(object):
                     log.log('Greenlet with %s end up with an error, %s records in webservice_cache.' % 
                         (arg, len(self.webservice_cache[arg])))
                     self.failed_locations.add(arg)
-        if alarm:
-            log.log('Go sleeping...')
-            time.sleep(60 * 3)
-            log.log('Wake up!')
+
+        if should_change_uname:
+            self.change_geo_username()
 
     def search(self, location):
         """greenlet，无论执行结果如何，参数location都做为返回结果的第一个参数返回"""
         params = {'maxRows': config.result_num, 'username': self.username, 'q': location}
+
         try:
             r = requests.get('http://api.geonames.org/searchJSON', params=params, timeout=10) # timeout = 10s
         except ConnectionError, e: # Connection reset by peer
@@ -195,8 +209,18 @@ class Normalizer(object):
         except RequestException, e:
             log.log('RequestException=。=: %s' % str(e), log.ERROR)
             return location, -1 # 第二个返回值是-1表示该greenlet异常
+
+        # 将回复的信息转化成字典
+        log.log(r.text, log.DEBUG)
+        response = ujson.loads(r.text)
+
+        # 判断Geonames的API是否已经超出限制 http://goo.gl/0ApBfL
+        if response.get('status', {}).get('value', -1) in (18, 19, 20):
+            log.log('Fire! %s' % response, log.WARNING)
+            return location, -2 # 第二个返回值是-2表示需要更换geo的用户名（相当于也未正确执行）
+
         try:
-            e = ujson.loads(r.text)['geonames'][0]
+            e = response['geonames'][0]
             regular_location = {
                 # 'toponymName' 和 'name'的区别：http://goo.gl/Lbp14Q
                 'name': e['name'].encode('utf-8') if 'name' in e else e['toponymName'].encode('utf-8'),
@@ -215,6 +239,14 @@ class Normalizer(object):
         self.process()
         self.clean_trick_records()
         self.cache.set_hit_result()
+
+    def change_geo_username(self):
+        if self.username == config.username_candidate_1:
+            self.username = config.username_candidate_2
+        elif self.username == config.username_candidate_2:
+            self.username = config.username
+        else:
+            self.username = config.username_candidate_1
 
     def get_new_actors(self):
         return self.new_actors

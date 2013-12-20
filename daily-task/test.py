@@ -4,8 +4,14 @@ monkey.patch_all()
 
 import gevent
 import requests
+from whoosh.index import open_dir
+from whoosh.fields import *
+from whoosh.qparser import *
+
 import decorator
 import util
+from util import WhooshUtil
+
 
 
 def foo(o):
@@ -106,5 +112,32 @@ def test17():
     greenlet.join()
     print type(greenlet.exception)
 
+def test18():
+    for j in range(24):
+        wu = WhooshUtil(ix_path='/Users/liushuai/temp/index')
+        wu.build_whoosh_index()
+
+        for i in range(j * 10, j * 10 + 10):
+            print i
+            wu.add_search_doc(location=str(i), rlocation='fuck', execute_right_now=False)
+
+        wu.commit()
+
+def test19():
+    ix = open_dir('/Users/liushuai/temp/index')
+    print 'doc count', ix.doc_count()
+
+    with ix.searcher() as searcher:
+        parser = QueryParser('location', ix.schema)
+        while True:
+            search_txt = raw_input()
+            q = parser.parse(search_txt)
+            results = searcher.search(q, limit=None)
+            for r in results:
+                print r.fields()
+
+
+
 if __name__ == '__main__':
-    test17()
+    test18()
+    test19()

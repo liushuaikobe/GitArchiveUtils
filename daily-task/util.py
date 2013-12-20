@@ -41,22 +41,25 @@ def detect(base, year, month, day):
 
 class WhooshUtil(object):
     """Whoosh搜索相关工具"""
-    def __init__(self):
+    def __init__(self, ix_path=config.ix_path):
         super(WhooshUtil, self).__init__()
+        self.ix_path = ix_path
         self.schema = Schema(location=TEXT(stored=True), rlocation=TEXT(stored=True))
         
     def build_whoosh_index(self):
         """建立location的Whoosh搜索索引"""
-        if not os.path.exists(config.ix_path):
-            os.mkdir(config.ix_path)
-        ix = index.create_in(config.ix_path, self.schema)
+        if not os.path.exists(self.ix_path):
+            os.mkdir(self.ix_path)
+            ix = index.create_in(self.ix_path, self.schema)
+        else:
+            ix = index.open_dir(self.ix_path)
         self.writer = ix.writer()
 
     def add_search_doc(self, location, rlocation, execute_right_now=True):
         """添加搜索内容"""
         self.writer.add_document(location=unicode(location, 'utf-8'), rlocation=unicode(rlocation, 'utf-8'))
         if execute_right_now:
-            writer.commit()
+            self.writer.commit()
 
     def commit(self):
         self.writer.commit()

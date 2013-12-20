@@ -36,34 +36,36 @@ class LocationCache(Cache):
         self.hit_count = 0 # 用于记录缓存的命中次数
         
     def put_location(self, location, regular_location, execute_right_now=True):
+        l_location = location.lower()
         if regular_location is None:
-            self.set(':'.join((location, 'origin')), -1)
+            self.set(':'.join((l_location, 'origin')), -1)
         else:
             for e in regular_location:
-                self.set(':'.join((location, e)), regular_location[e])
+                self.set(':'.join((l_location, e)), regular_location[e])
         if execute_right_now:
             self.execute()
 
     def get_location(self, location):
         self.search_count += 1
-        self.get(':'.join((location, 'origin')))
-        self.get(':'.join((location, 'name')))
-        self.get(':'.join((location, 'countryName')))
-        self.get(':'.join((location, 'lat')))
-        self.get(':'.join((location, 'lng')))
+        l_location = location.lower()
+        self.get(':'.join((l_location, 'origin')))
+        self.get(':'.join((l_location, 'name')))
+        self.get(':'.join((l_location, 'countryName')))
+        self.get(':'.join((l_location, 'lat')))
+        self.get(':'.join((l_location, 'lng')))
         result = self.execute()
         if result[0] is None:
             # 缓存未命中
-            # log.log('missing => %s' % location)
+            # log.log('missing => %s' % location, log.DEBUG)
             return None
         elif result[0] == '-1':
             # 缓存命中，但之前没有规范化的结果，是一个trick_actor
-            # log.log('hit trick => %s' % location)
+            # log.log('hit trick => %s' % location, log.DEBUG)
             self.hit_count += 1
             return -1
         else:
             # 缓存命中，是一个非常给力的用户：）
-            # log.log('hit normal => %s' % location)
+            # log.log('hit normal => %s' % location, log.DEBUG)
             self.hit_count += 1
             return {
                 'name': result[1],
