@@ -188,11 +188,13 @@ class Normalizer(object):
                     util.sendmail('Exception', '%s records did not be handled right.' % len(exception_records))
                 else:
                     log.log('Greenlet with %s end up with an error, %s records in webservice_cache.' % 
-                        (arg, len(self.webservice_cache[arg])))
+                        (arg, len(self.webservice_cache[arg])), log.WARNING)
                     self.failed_locations.add(arg)
 
         if should_change_uname:
+            log.log('Freeze name is %s' % self.username)
             self.change_geo_username()
+            log.log('After change: %s' % self.username)
 
     def search(self, location):
         """greenlet，无论执行结果如何，参数location都做为返回结果的第一个参数返回"""
@@ -211,7 +213,7 @@ class Normalizer(object):
             return location, -1 # 第二个返回值是-1表示该greenlet异常
 
         # 将回复的信息转化成字典
-        log.log(r.text, log.DEBUG)
+        # log.log(r.text, log.DEBUG)
         response = ujson.loads(r.text)
 
         # 判断Geonames的API是否已经超出限制 http://goo.gl/0ApBfL
@@ -241,6 +243,8 @@ class Normalizer(object):
         self.cache.set_hit_result()
 
     def change_geo_username(self):
+        '''更换Geonames的用户名，记得把config里面的也要换了，
+        因为处理下一个文件时会重新从config里面读取，暂时忽略这个缺陷'''
         if self.username == config.username_candidate_1:
             self.username = config.username_candidate_2
         elif self.username == config.username_candidate_2:
