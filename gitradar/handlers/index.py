@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-import motor
-import tornadoredis
-
 from tornado.web import RequestHandler
 from tornado.web import asynchronous
 from tornado import gen
+import motor
+import tornadoredis
+from whoosh.fields import *
+from whoosh.qparser import *
 
 
-c = tornadoredis.Client(host='162.243.37.124', port=6379)
-c.connect()
+# c = tornadoredis.Client(host='162.243.37.124', port=6379)
+# c.connect()
 
 class IndexHandler(RequestHandler):
     @asynchronous
@@ -33,9 +34,16 @@ class IndexHandler(RequestHandler):
     @asynchronous
     @gen.coroutine
     def post(self):
-        q = self.get_argument('location')
-        cursor = self.settings['db'].actor.find({'location.name': q}).sort([('val', -1)])
-        actors = []
-        while (yield cursor.fetch_next):
-            actors.append(cursor.next_object())
-        self.render('index.html', actors=actors)
+        location = self.get_argument('location')
+        # cursor = self.settings['db'].actor.find({'location.name': location}).sort([('val', -1)])
+        # actors = []
+        # while (yield cursor.fetch_next):
+        #     actors.append(cursor.next_object())
+        ix = self.settings['ix']
+        with ix.searcher() as searcher:
+            parser = QueryParser('location', ix.schema)
+            q_str = parser.parse('*%s*' % location)
+            results = searcher.search(q_str, limit=10)
+            locations = [result['location'] for result in results]
+            rresults = [result['rlocation'] for result in results]
+            self.render('search_result.html', results=locations, rresults=rresults)

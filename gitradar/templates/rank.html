@@ -1,0 +1,25 @@
+{% extends "./base.html" %}
+
+{% block js %}
+{% end %}
+
+{% block content %}
+
+<div class="ui animated list">
+    {% for actor in actors %}
+        <div class="item">
+            <img class="ui avatar image" src="http://www.gravatar.com/avatar/{{ actor.get('gravatar_id', '') }}">
+            <div class="content">
+                <a href="/report/{{ actor['login'] }}" class="header">{{ actor['login'] }}</a>
+                {{ actor['val'] }}
+            </div>
+        </div>
+    {% end %}
+</div>
+
+{% block js_embed %}
+<script type="text/javascript">
+</script>
+{% end %}
+
+{% end %}
