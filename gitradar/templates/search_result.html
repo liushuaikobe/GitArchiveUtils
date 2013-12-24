@@ -5,19 +5,26 @@
 
 {% block content %}
 
-{% if results and rresults %}
+{% if locations and rlocations %}
 <h3 class="ui green header">Found these:</h3>
 {% else %}
 <h3 class="ui red header">Can't find anywhere...</h3>
 {% end %}
 
+{% if clocations %}
+<h3 class="ui green header">Do you mean these: </h3>
+{% for cl in clocations %}
+<a href="/search/{{ cl }}">{{ cl }}</a>
+{% end %}
+{% end %}
+
 <div class="ui divided list">
-    {% for (r, rr) in zip(results, rresults) %}
+    {% for (l, rl) in zip(locations, rlocations) %}
         <div class="item">
             <i class="map marker icon"></i>
             <div class="content">
-                <div class="header">{{ r }}</div>
-                <a href="/rank/{{ rr }}" class="description">{{ rr }}</a>
+                <div class="header">{{ l }}</div>
+                <a href="/rank/{{ rl }}">{{ rl }}</a>
             </div>
         </div>
     {% end %}

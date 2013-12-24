@@ -12,8 +12,8 @@ from whoosh.qparser import *
 # c.connect()
 
 class IndexHandler(RequestHandler):
-    @asynchronous
-    @gen.coroutine
+    #@asynchronous
+    #@gen.coroutine
     def get(self):
         # keys = yield gen.Task(c.keys, pattern='grcount:San Fran*:lng')
         # locations = []
@@ -31,19 +31,6 @@ class IndexHandler(RequestHandler):
 
         self.render('index.html', actors=None)
 
-    @asynchronous
-    @gen.coroutine
     def post(self):
         location = self.get_argument('location')
-        # cursor = self.settings['db'].actor.find({'location.name': location}).sort([('val', -1)])
-        # actors = []
-        # while (yield cursor.fetch_next):
-        #     actors.append(cursor.next_object())
-        ix = self.settings['ix']
-        with ix.searcher() as searcher:
-            parser = QueryParser('location', ix.schema)
-            q_str = parser.parse('*%s*' % location)
-            results = searcher.search(q_str, limit=10)
-            locations = [result['location'] for result in results]
-            rresults = [result['rlocation'] for result in results]
-            self.render('search_result.html', results=locations, rresults=rresults)
+        return self.redirect('/search/%s' % location)
