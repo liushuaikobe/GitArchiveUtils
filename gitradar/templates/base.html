@@ -9,8 +9,10 @@
         {% block js %}{% end %}
     </head>
     <body>
-    <div>
-        {% block content%}{% end %}
+    <div class="ui one column page grid">
+        <div class="column">
+            {% block content%}{% end %}
+        </div>
     </div>
     </body>
     {% block js_embed %}{% end %}

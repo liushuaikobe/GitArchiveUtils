@@ -18,5 +18,5 @@ class RankHandler(RequestHandler):
         actors = []
         while (yield cursor.fetch_next):
             actors.append(cursor.next_object())
-        self.render('rank.html', actors=actors)
+        self.render('rank.html', actors=actors, location=location)
         

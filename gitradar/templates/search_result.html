@@ -5,17 +5,17 @@
 
 {% block content %}
 
+{% if clocations %}
+<h3 class="ui green header">Do you mean these? </h3>
+{% for cl in clocations %}
+<a href="/search/{{ cl }}">{{ cl }}</a>
+{% end %}
+{% end %}
+
 {% if locations and rlocations %}
 <h3 class="ui green header">Found these:</h3>
 {% else %}
 <h3 class="ui red header">Can't find anywhere...</h3>
-{% end %}
-
-{% if clocations %}
-<h3 class="ui green header">Do you mean these: </h3>
-{% for cl in clocations %}
-<a href="/search/{{ cl }}">{{ cl }}</a>
-{% end %}
 {% end %}
 
 <div class="ui divided list">
