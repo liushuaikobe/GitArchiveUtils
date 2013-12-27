@@ -11,22 +11,52 @@
             <i class="map marker icon"></i>
         </div>
     </form>
-    <a class="index-foot" href="#">View Map</a>
+    <a class="index-foot view-map" href="#">View Map</a>
 
 
-{% if actors %}
-<ul>
-    {% for actor in actors %}
-        <li>
-            <a href="/report/{{ actor['login'] }}">{{ actor['login'] }}</a>({{ actor.get('name', 'null') }})&nbsp;{{ actor['val'] }}
-        </li>
+    {% if actors %}
+    <ul>
+        {% for actor in actors %}
+            <li>
+                <a href="/report/{{ actor['login'] }}">{{ actor['login'] }}</a>({{ actor.get('name', 'null') }})&nbsp;{{ actor['val'] }}
+            </li>
+        {% end %}
+    </ul>
     {% end %}
-</ul>
+
+  <div class="ui basic modal">
+      <div class="header">
+      Change Your Homepage
+    </div>
+    <div class="content">
+      <div class="left">
+        <i class="home icon"></i>
+      </div>
+      <div class="right">
+        <p>Are you sure you want to change your homepage to <b>Poodle.com</b>?</p>
+      </div>
+    </div>
+    <div class="actions">
+      <div class="two fluid ui buttons">
+        <div class="ui negative labeled icon button">
+          <i class="remove icon"></i>
+          No
+        </div>
+        <div class="ui positive right labeled icon button">
+          Yes
+          <i class="checkmark icon"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
 {% end %}
 
 {% block js_embed %}
 <script type="text/javascript">
+    $(".view-map").click(function(e) {
+        e.preventDefault();
+        $('.basic.modal').modal("show");
+    }) 
 </script>
-{% end %}
-
 {% end %}
