@@ -40,6 +40,9 @@ data_base = '/root/data'
 # location搜索索引保存位置
 ix_path = '/root/index'
 
+# 各个地区用户数量的CSV文件的位置
+csv_path = '/root'
+
 # 邮件相关
 mail_config = {
     'from': 'gitradar@163.com',

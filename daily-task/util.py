@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import glob
 import os
+import csv
 
 import smtplib
 from email.mime.text import MIMEText
@@ -8,6 +9,7 @@ from whoosh import index
 from whoosh.fields import Schema, TEXT
 
 import config
+from database import get_redis_pipeline
 
 
 mail_config = config.mail_config
@@ -64,3 +66,27 @@ class WhooshUtil(object):
     def commit(self):
         self.writer.commit()
         
+
+def grcount2csv(output_path=config.csv_path):
+    """把grcount的信息转化成CSV文件，以便在前端展示"""
+
+    with open(os.path.join(output_path, 'grcount.csv'), 'wb') as csvfile:
+        csv_writer = csv.writer(csvfile)
+        csv_writer.writerow(['title', 'country', 'count', 'latitude', 'longitude'])
+
+        pipe = get_redis_pipeline()
+        pipe.keys(pattern='grcount:San Fran*:lng')
+        keys = pipe.execute()
+        for key in keys[0]:
+            prefix, location_and_counttry, item = key.split(':')
+
+            title, country = location_and_counttry.split('@')
+        
+            pipe.get(':'.join((prefix, location_and_counttry, 'lat')))
+            pipe.get(':'.join((prefix, location_and_counttry, 'lng')))
+            pipe.get(':'.join((prefix, location_and_counttry, 'count')))
+
+            lat, lng, count = pipe.execute()
+
+            csv_writer.writerow([title, country, count, lat, lng])
+
