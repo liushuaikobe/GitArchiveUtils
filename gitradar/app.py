@@ -9,9 +9,11 @@ from whoosh.index import open_dir
 
 from business.search import GRSearcher 
 from handlers.search import SearchHandler
+from handlers.visual import VisualHandler
 from handlers.index import IndexHandler
 from handlers.report import ReportHandler
 from handlers.rank import RankHandler
+from handlers.test import TestHandler
 
 
 parse_config_file('config.py')
@@ -21,9 +23,12 @@ gr_searcher = GRSearcher(options.whoosh_ix_path)
 
 handlers = [
     (r'/', IndexHandler),
+    (r'/visual', VisualHandler),
     (r'/search/(.*)', SearchHandler),
     (r'/report/([A-Za-z0-9]+)', ReportHandler),
-    (r'/rank/(.*)', RankHandler)
+    (r'/rank/(.*)', RankHandler),
+    # only for test
+    (r'/test', TestHandler)
 ]
 
 settings = {

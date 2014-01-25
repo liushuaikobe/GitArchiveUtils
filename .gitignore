@@ -3,6 +3,7 @@
 log*.txt
 */ix/*
 *.csv
+*.swp
 
 # C extensions
 *.so
