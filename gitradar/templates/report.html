@@ -1,28 +1,38 @@
 {% extends "./base.html" %}
 
 {% block content %}
+<div class="ui piled segment">
+    <div class="cv">
+    <div class="cv-top">
+        <img class="rounded ui image" src="http://www.gravatar.com/avatar/{{ actor['gravatar_id'] }}?s=140"></img>
+        <h2 class="markedness">
+            <a href="https://github.com/{{ actor['login'] }}">{{ actor['login'] }}</a></br>
+            <div>A python hacker</div>
+        </h2>
+    </div>
 
-<h2><a href="https://github.com/{{ actor }}">{{ actor }}</a></h2>
-{% if result %}
-<ul>
-{% for r in result %}
-    <li>
-        Repo id: {{ int(r["repository.id"]) }}
-        <ul>
-        {% for c in r["contribution"] %}
-            <li>
-                <a href="{{ c["url"] }}">{{ c["name"] }}</a> ☆:{{ int(c["star"]) }} Y:{{ int(c["fork"]) }}
-                <ul>
-                    {% for t in c["payload"] %}
-                        <li>{{ t }} {{ int(c["payload"][t]) }}</li>
-                    {% end %}
-                </ul>
-            </li>
-        {% end %}
-        </ul>
-    </li>       
-{% end %}
-</ul>
-{% end %}
+    {% if result %}
+    <ul>
+    {% for r in result %}
+        <li>
+            Repo id: {{ int(r["repository.id"]) }}
+            <ul>
+            {% for c in r["contribution"] %}
+                <li>
+                    <a href="{{ c["url"] }}">{{ c["name"] }}</a> ☆:{{ int(c["star"]) }} Y:{{ int(c["fork"]) }}
+                    <ul>
+                        {% for t in c["payload"] %}
+                            <li>{{ t }} {{ int(c["payload"][t]) }}</li>
+                        {% end %}
+                    </ul>
+                </li>
+            {% end %}
+            </ul>
+        </li>       
+    {% end %}
+    </ul>
+    {% end %}
+    </div>
+</div>
 
 {% end %}

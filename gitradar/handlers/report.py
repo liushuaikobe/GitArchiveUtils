@@ -35,12 +35,13 @@ class ReportHandler(RequestHandler):
 
     @asynchronous
     @gen.coroutine
-    def get(self, actor):
+    def get(self, actor_login):
+        actor_vivid = yield motor.Op(self.settings['db'].actor.find_one, {'login': actor_login})
         result = yield motor.Op(self.settings['db'].event.group, 
                 key={"repository.id": True},
-                condition={"actor": actor},
+                condition={"actor": actor_login},
                 initial={"contribution": []},
                 reduce=self.group_reduce
             )
-        self.render('report.html', actor=actor, result=result)
+        self.render('report.html', actor=actor_vivid, result=result)
         
