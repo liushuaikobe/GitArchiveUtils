@@ -50,13 +50,23 @@ a.button {
 }
 
 .cv {
-    padding: 20px;
+    padding: 0px;
 }
 
-.cv-top .markedness > a {
+.markedness {
     font-size: 48px;
     text-transform: uppercase;
     letter-spacing: 3px;
+}
+
+.description {
+    line-height: 130%;
+}
+
+.cv-top {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 20px;
 }
 
 .cv-top img {

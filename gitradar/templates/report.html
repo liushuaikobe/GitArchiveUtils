@@ -3,13 +3,32 @@
 {% block content %}
 <div class="ui piled segment">
     <div class="cv">
+
+    <!-- top bar (basic profile) -->
     <div class="cv-top">
         <img class="rounded ui image" src="http://www.gravatar.com/avatar/{{ actor['gravatar_id'] }}?s=140"></img>
-        <h2 class="markedness">
-            <a href="https://github.com/{{ actor['login'] }}">{{ actor['login'] }}</a></br>
-            <div>A python hacker</div>
+        <h2>
+            <a class="markedness" href="https://github.com/{{ actor['login'] }}">{{ actor['name'] }}</a></br>
+            <div class="description">A python hacker</br>
+            {% if actor.get('blog', '') %}
+            Website: <a href="{{ actor['blog'] }}">{{ actor['blog'] }}</a></br>
+            {% end %}
+            Based: {{ actor['location']['name'] }}, {{ actor['location']['countryName'] }}</div>
         </h2>
     </div>
+
+    <div class="ui clearing divider"></div>
+
+    <!-- report start -->
+
+    <!-- recently -->
+    <div class="ui ribbon label">Recently</div>
+    <p>
+    As far as we know, {{ actor['name'] }} was devoted to the project {{}} recently, of which {{}} is the most popular one, it has {{}} stars and {{}} forks.
+    </p>
+
+    <!-- Open Sourcing -->
+    
 
     {% if result %}
     <ul>
