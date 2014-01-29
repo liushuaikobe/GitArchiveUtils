@@ -24,7 +24,67 @@
     <!-- recently -->
     <div class="ui ribbon label">Recently</div>
     <p>
-    As far as we know, {{ actor['name'] }} was devoted to the project {{}} recently, of which {{}} is the most popular one, it has {{}} stars and {{}} forks.
+    As far as we know, 
+    {{ actor['name'] }} was devoted to the 
+    {% if len(recently_devoted_repos) <= 1 %}
+    project 
+    {% else %}
+    projects
+    {% end %}
+    {% for repo_id in recently_devoted_repos %}
+    <ul>
+        <li><a href="{{ recently_devoted_repos[repo_id]['url'] }}">{{ recently_devoted_repos[repo_id]['name'] }}</a></li> 
+    </ul>
+    {% end %}
+    recently, of which 
+    <a href="{{ recently_devoted_repos[most_popular_repo_id]['url'] }}">
+        {{ recently_devoted_repos[most_popular_repo_id]['name'] }}
+    </a> is the most popular one, it has 
+    {{ recently_devoted_repos[most_popular_repo_id]['stargazers'] }} stars and 
+    {{ recently_devoted_repos[most_popular_repo_id]['forks'] }} forks.
+    </p>
+
+    <!-- open sourcing -->
+    <div class="ui ribbon label">Open Sourcing</div>
+    <p>
+    As for the open sourcing projects, being very
+    {% if event_total < 5  %}
+    average
+    {% elif event_total >=5 and event_total < 20 %}
+    enthusiastic
+    {% else %}
+    passionate
+    {% end %}
+    recently, 
+    
+    {{ actor['name'] }}
+    {% if len(recently_devoted_os_repos) == 0 %}
+    didn't contribute to any projects recently.
+    {% else %}
+        has contributed to the
+        {% if len(recently_devoted_os_repos) == 1 %}
+        project  
+        {% else  %}
+        projects
+        {% end %}
+        <ul>
+            {% for repo_id in recently_devoted_os_repos %}
+            <li><a href="{{ recently_devoted_os_repos[repo_id]['url'] }}">{{ recently_devoted_os_repos[repo_id]['name'] }}</a></li>
+            {% end %}
+        </ul>
+        recently,  of which 
+        <a href="{{ recently_devoted_os_repos[most_popular_os_repos_id]['url'] }}">
+            {{ recently_devoted_os_repos[most_popular_os_repos_id]['name'] }}
+        </a> 
+        is the most famous one, it has 
+        {{ recently_devoted_os_repos[most_popular_os_repos_id]['stargazers'] }} stars and 
+        {{ recently_devoted_os_repos[most_popular_os_repos_id]['forks'] }} forks.
+        {{ actor['name'] }} has send 
+        {{ event_type_count['PullRequestEvent'] }} PullRequests, 
+        post {{ event_type_count['IssuesEvent'] }} issues 
+        and contributed {{ event_type_count['PushEvent'] }} commits.
+    {% end %}
+
     </p>
 
     <!-- Open Sourcing -->

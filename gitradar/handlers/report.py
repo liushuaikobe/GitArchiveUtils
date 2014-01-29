@@ -41,19 +41,52 @@ class ReportHandler(RequestHandler):
         # 检索出用户的全部信息
         actor_vivid = yield motor.Op(self.settings['db'].actor.find_one, {'login': actor_login})
         # 检索出用户最近一周致力于哪些repos
-        cursor = self.settings['db'].event.find({'created_at': {'$gt': util.a_week_ago_iso()}}).sort({'created_at': 1})
-        recently_devoted_repos = []
-        recently_devoted_repos_url = []
-        n = 3 # 找到3个即可
+        cursor = self.settings['db'].event.find({'actor': actor_login}).sort([('created_at', -1)])
+        # cursor = self.settings['db'].event.find({'created_at': {'$gt': util.a_week_ago_iso()}, 'actor': actor_login})
+        # .sort([('created_at', -1)])
+
+        recently_devoted_repos = {} 
+        most_popular_repo_id = ''
+        max_concerns = -1 # 记录这些repo中哪个最流行
+
+        recently_devoted_os_repos = {}
+        most_popular_os_repos_id = ''
+        event_type_count = {
+                'IssuesEvent': 0,
+                'PullRequestEvent': 0,
+                'PushEvent': 0
+                }
+        max_os_concerns = -1 # 记录贡献过的开源项目哪个最流行
+
         while (yield cursor.fetch_next):
             event = cursor.next_object()
             repo = event['repository']
-            if repo['fork'] == True or repo['name'] in recently_devoted_repos:
-                continue
-            recently_devoted_repos.append(repo['name'])
-            recently_devoted_repos_url.append(repo['url'])
-            if len(recently_devoted_repos) == n:
-                break
+
+            if repo['owner'] != actor_login: # 为开源项目做的贡献
+                if repo['id'] not in recently_devoted_os_repos:
+                    recently_devoted_os_repos[repo['id']] = {
+                                'name': repo['name'],
+                                'forks': repo['forks'],
+                                'stargazers': repo['stargazers'],
+                                'url': repo['url']
+                            }
+                    current_concerns = repo['stargazers'] + repo['forks']  
+                    if current_concerns > max_os_concerns:
+                        max_os_concerns = current_concerns
+                        most_popular_os_repos_id = repo['id']
+                event_type_count[event['type']] += 1
+            else:
+                if repo['id'] not in recently_devoted_repos:
+                    recently_devoted_repos[repo['id']] = {
+                                'name': repo['name'],
+                                'forks': repo['forks'],
+                                'stargazers': repo['stargazers'],
+                                'url': repo['url']
+                            }
+                    current_concerns = repo['stargazers'] + repo['forks']
+                    if current_concerns > max_concerns:
+                        max_concerns = current_concerns
+                        most_popular_repo_id = repo['id']
 
         result = yield motor.Op(self.settings['db'].event.group, 
                 key={"repository.id": True},
@@ -61,5 +94,15 @@ class ReportHandler(RequestHandler):
                 initial={"contribution": []},
                 reduce=self.group_reduce
             )
-        self.render('report.html', actor=actor_vivid, result=result)
+        args = {
+            'actor': actor_vivid,
+            'result': result,
+            'recently_devoted_repos': recently_devoted_repos,
+            'most_popular_repo_id': most_popular_repo_id,
+            'recently_devoted_os_repos': recently_devoted_os_repos,
+            'most_popular_os_repos_id': most_popular_os_repos_id,
+            'event_type_count': event_type_count,
+            'event_total': sum(event_type_count.values()) 
+        }
+        self.render('report.html', **args)
         
