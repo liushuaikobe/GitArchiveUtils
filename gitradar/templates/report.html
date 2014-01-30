@@ -24,24 +24,28 @@
     <!-- recently -->
     <div class="ui ribbon label">Recently</div>
     <p>
-    As far as we know, 
-    {{ actor['name'] }} was devoted to the 
-    {% if len(recently_devoted_repos) <= 1 %}
-    project 
+    As far as we know, {{ actor['name'] }}
+    {% if len(recently_devoted_repos) > 0 %}
+        was devoted to the 
+        {% if len(recently_devoted_repos) == 1 %}
+        project 
+        {% else %}
+        projects
+        {% end %}
+        {% for repo_id in recently_devoted_repos %}
+        <ul>
+            <li><a href="{{ recently_devoted_repos[repo_id]['url'] }}">{{ recently_devoted_repos[repo_id]['name'] }}</a></li> 
+        </ul>
+        {% end %}
+        recently, of which 
+        <a href="{{ recently_devoted_repos[most_popular_repo_id]['url'] }}">
+            {{ recently_devoted_repos[most_popular_repo_id]['name'] }}
+        </a> is the most popular one, it has 
+        {{ recently_devoted_repos[most_popular_repo_id]['stargazers'] }} stars and 
+        {{ recently_devoted_repos[most_popular_repo_id]['forks'] }} forks.
     {% else %}
-    projects
+        wasn't devoted to any projects of his own recently.
     {% end %}
-    {% for repo_id in recently_devoted_repos %}
-    <ul>
-        <li><a href="{{ recently_devoted_repos[repo_id]['url'] }}">{{ recently_devoted_repos[repo_id]['name'] }}</a></li> 
-    </ul>
-    {% end %}
-    recently, of which 
-    <a href="{{ recently_devoted_repos[most_popular_repo_id]['url'] }}">
-        {{ recently_devoted_repos[most_popular_repo_id]['name'] }}
-    </a> is the most popular one, it has 
-    {{ recently_devoted_repos[most_popular_repo_id]['stargazers'] }} stars and 
-    {{ recently_devoted_repos[most_popular_repo_id]['forks'] }} forks.
     </p>
 
     <!-- open sourcing -->
