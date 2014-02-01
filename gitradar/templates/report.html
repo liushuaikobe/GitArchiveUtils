@@ -1,5 +1,10 @@
 {% extends "./base.html" %}
 
+{% block js %}
+<script src="{{ static_url("js/report.js") }}"></script>
+<script src="{{ static_url("js/highcharts.js") }}"></script>
+{% end %}
+
 {% block content %}
 <div class="ui piled segment">
     <div class="cv">
@@ -34,17 +39,19 @@
         {% end %}
         {% for repo_id in recently_devoted_repos %}
         <ul>
-            <li><a href="{{ recently_devoted_repos[repo_id]['url'] }}">{{ recently_devoted_repos[repo_id]['name'] }}</a></li> 
+            <li><a href="{{ recently_devoted_repos[repo_id]['url'] }}">
+                {{ recently_devoted_repos[repo_id]['owner'] }}/{{ recently_devoted_repos[repo_id]['name'] }}
+            </a></li> 
         </ul>
         {% end %}
         recently, of which 
         <a href="{{ recently_devoted_repos[most_popular_repo_id]['url'] }}">
-            {{ recently_devoted_repos[most_popular_repo_id]['name'] }}
+            {{ recently_devoted_repos[most_popular_repo_id]['owner'] }}/{{ recently_devoted_repos[most_popular_repo_id]['name'] }}
         </a> is the most popular one, it has 
         {{ recently_devoted_repos[most_popular_repo_id]['stargazers'] }} stars and 
         {{ recently_devoted_repos[most_popular_repo_id]['forks'] }} forks.
     {% else %}
-        wasn't devoted to any projects of his own recently.
+        wasn't devoted to any projects of his/hers own recently.
     {% end %}
     </p>
 
@@ -73,16 +80,21 @@
         {% end %}
         <ul>
             {% for repo_id in recently_devoted_os_repos %}
-            <li><a href="{{ recently_devoted_os_repos[repo_id]['url'] }}">{{ recently_devoted_os_repos[repo_id]['name'] }}</a></li>
+            <li><a href="{{ recently_devoted_os_repos[repo_id]['url'] }}">
+                {{ recently_devoted_os_repos[repo_id]['owner'] }}/{{ recently_devoted_os_repos[repo_id]['name'] }}
+            </a></li>
             {% end %}
         </ul>
         recently,  of which 
         <a href="{{ recently_devoted_os_repos[most_popular_os_repos_id]['url'] }}">
+            {{ recently_devoted_os_repos[most_popular_os_repos_id]['owner'] }}
             {{ recently_devoted_os_repos[most_popular_os_repos_id]['name'] }}
         </a> 
         is the most famous one, it has 
         {{ recently_devoted_os_repos[most_popular_os_repos_id]['stargazers'] }} stars and 
         {{ recently_devoted_os_repos[most_popular_os_repos_id]['forks'] }} forks.
+        </p>
+        <p>
         {{ actor['name'] }} has send 
         {{ event_type_count['PullRequestEvent'] }} PullRequests, 
         post {{ event_type_count['IssuesEvent'] }} issues 
@@ -91,9 +103,12 @@
 
     </p>
 
-    <!-- Open Sourcing -->
-    
+    <!-- Language -->
+    <div class="ui ribbon label">Skills</div>
+    <div id="language-pie"></div>
 
+    <!-- Debug -->
+    {% if debug %}
     {% if result %}
     <ul>
     {% for r in result %}
@@ -115,7 +130,16 @@
     {% end %}
     </ul>
     {% end %}
+    {% end %}
     </div>
 </div>
 
+{% end %}
+
+{% block js_embed %}
+<script type="text/javascript">
+    set_login("{{ actor['login'] }}");
+    set_pie_div("language-pie");
+    main();
+</script>
 {% end %}

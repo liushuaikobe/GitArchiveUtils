@@ -65,6 +65,7 @@ class ReportHandler(RequestHandler):
             if repo['owner'] != actor_login: # 为开源项目做的贡献
                 if repo['id'] not in recently_devoted_os_repos:
                     recently_devoted_os_repos[repo['id']] = {
+                                'owner': repo['owner'],
                                 'name': repo['name'],
                                 'forks': repo['forks'],
                                 'stargazers': repo['stargazers'],
@@ -78,6 +79,7 @@ class ReportHandler(RequestHandler):
             else:
                 if repo['id'] not in recently_devoted_repos:
                     recently_devoted_repos[repo['id']] = {
+                                'owner': repo['owner'],
                                 'name': repo['name'],
                                 'forks': repo['forks'],
                                 'stargazers': repo['stargazers'],
@@ -95,6 +97,7 @@ class ReportHandler(RequestHandler):
                 reduce=self.group_reduce
             )
         args = {
+            'debug': True,
             'actor': actor_vivid,
             'result': result,
             'recently_devoted_repos': recently_devoted_repos,
