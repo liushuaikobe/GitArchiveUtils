@@ -73,3 +73,7 @@ a.button {
     float: right;
 }
 
+.report-orgs-avatar {
+    height: 100px;
+    width: 100px;
+}

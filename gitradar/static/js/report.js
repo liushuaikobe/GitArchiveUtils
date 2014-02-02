@@ -30,6 +30,10 @@ function user_repos(login, callback, page_number, prev_data) {
     });
 }
 
+function user_orgs(login, callback) {
+    $.getJSON("https://api.github.com/users/" + login + "/orgs", callback);
+}
+
 function calc_and_draw(login, repos) {
     var languages = {},
         sorted_repos = [],
@@ -147,6 +151,30 @@ function write_popular_repos(sorted_repos) {
     });
 }
 
+function write_orgs(orgs) {
+    if (orgs.length == 0) {
+        $("#orgs-p").html("She/He isn't a member of any organizations.");
+        return ;
+    }
+    
+    var item_template = 
+        '<div class="item"> \
+            <div class="img"> \
+                <img src="{{ avatar_url }}" class="report-orgs-avatar"> \
+            </div> \
+            <div class="content"> \
+                <div class="name"><a href="https://github.com/{{ login }}">{{ login }}</a></div> \
+            </div> \
+        </div>';
+
+    $.each(orgs, function(i, org){
+        $("#orgs-items").append(item_template.replace(/{{ (\w*) }}/g, function(m, key){
+            return org.hasOwnProperty(key) ? org[key] : "";
+        }));
+    });
+}
+
 function main() {
     user_repos(login, calc_and_draw);
+    user_orgs(login, write_orgs);
 }
