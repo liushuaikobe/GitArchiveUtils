@@ -32,17 +32,29 @@ function user_repos(login, callback, page_number, prev_data) {
 
 function calc_and_draw(login, repos) {
     var languages = {},
+        sorted_repos = [],
+        sort_repos_limit = 5,
         own_repo_num = 0;
-    console.log("in calc_and_draw");
-    console.log(repos);
     
     $.each(repos, function(i, repo){
+
+        sorted_repos.push({
+            'name': repo.full_name,
+            'url': repo.html_url,
+            'watchers': repo.watchers,
+            'forks': repo.forks,
+            'language': repo.language,
+            'description': repo.description,
+            'created_at': repo.created_at,
+            'created_at_year': repo.created_at.slice(0, 4),
+            'popularity': repo.watchers + repo.forks
+        });
+
         if (repo.fork !== false) {
             return;
         }
         own_repo_num++;
 
-        console.log(repo.language);
         if (repo.language) {
             if (repo.language in languages) {
                 languages[repo.language]++;
@@ -51,9 +63,15 @@ function calc_and_draw(login, repos) {
             }
         } 
     });
-    console.log(languages);
+
+    sorted_repos.sort(function (a, b) {
+        return b.popularity - a.popularity;
+    });
+    sorted_repos = sorted_repos.slice(0, sort_repos_limit);
+    console.log(sorted_repos);
 
     draw_lang_pie(languages, own_repo_num);
+    write_popular_repos(sorted_repos);
 }
 
 function draw_lang_pie(languages, own_repo_num) {
@@ -97,6 +115,35 @@ function draw_lang_pie(languages, own_repo_num) {
             name: 'percentage',
             data: highchart_pie_data
         }]
+    });
+}
+
+function write_popular_repos(sorted_repos) {
+    if (sorted_repos.length == 0) {
+        $("#popular-repos-p").html("There isn't any repo to display.");
+        return ;
+    }    
+
+    var item_template = 
+        '<div class="item"> \
+            <div class="right floated ui label"> \
+                <i class="fork code icon"></i> {{ forks }} \
+                <i class="star icon"></i> {{ watchers }} \
+            </div> \
+            <div class="content"> \
+                <div class="header"> \
+                    <a href={{ url }}>{{ name }}</a> \
+                </div> \
+                {{ language }} - created at {{ created_at_year }} </br> \
+                {{ description }} \
+            </div> \
+        </div>';
+
+    $.each(sorted_repos, function(i, repo){
+        $("#popular-repos-list").append(
+            item_template.replace(/{{ (\w*) }}/g, function(m, key){
+                return repo.hasOwnProperty(key) ? repo[key] : ""; 
+        }));
     });
 }
 

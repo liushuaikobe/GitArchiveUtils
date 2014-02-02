@@ -14,7 +14,7 @@
         <img class="rounded ui image" src="http://www.gravatar.com/avatar/{{ actor['gravatar_id'] }}?s=140"></img>
         <h2>
             <a class="markedness" href="https://github.com/{{ actor['login'] }}">{{ actor['name'] }}</a></br>
-            <div class="description">A python hacker</br>
+            <div class="description">{{ actor['login'] }}</br>
             {% if actor.get('blog', '') %}
             Website: <a href="{{ actor['blog'] }}">{{ actor['blog'] }}</a></br>
             {% end %}
@@ -87,8 +87,7 @@
         </ul>
         recently,  of which 
         <a href="{{ recently_devoted_os_repos[most_popular_os_repos_id]['url'] }}">
-            {{ recently_devoted_os_repos[most_popular_os_repos_id]['owner'] }}
-            {{ recently_devoted_os_repos[most_popular_os_repos_id]['name'] }}
+            {{ recently_devoted_os_repos[most_popular_os_repos_id]['owner'] }}/{{ recently_devoted_os_repos[most_popular_os_repos_id]['name'] }}
         </a> 
         is the most famous one, it has 
         {{ recently_devoted_os_repos[most_popular_os_repos_id]['stargazers'] }} stars and 
@@ -106,6 +105,13 @@
     <!-- Language -->
     <div class="ui ribbon label">Skills</div>
     <div id="language-pie"></div>
+
+    <!-- Famous repos -->
+    <div class="ui ribbon label">Popular Repos</div>
+    <p id="popular-repos-p" ></p>
+    <div id="popular-repos-list" class="ui list" >
+        
+    </div>
 
     <!-- Debug -->
     {% if debug %}
