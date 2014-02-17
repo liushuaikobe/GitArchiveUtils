@@ -75,7 +75,8 @@ def grcount2csv(output_path=config.csv_path):
         csv_writer.writerow(['title', 'country', 'count', 'latitude', 'longitude'])
 
         pipe = get_redis_pipeline()
-        pipe.keys(pattern='grcount:San Fran*:lng')
+        keys_pattern = ':'.join((config.redis_count_prefix, 'San Fran*', 'lng'))
+        pipe.keys(pattern=keys_pattern)
         keys = pipe.execute()
         for key in keys[0]:
             prefix, location_and_counttry, item = key.split(':')

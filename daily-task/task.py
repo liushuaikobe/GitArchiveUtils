@@ -71,11 +71,11 @@ def main(p):
             # 处理记录的actor不存在的记录
             record_normalizer.set_records(record_actor_new)
             record_normalizer.normalize()
-            record_actor_new = record_normalizer.get_record_actor_exist()
+            record_actor_new = record_normalizer.get_record_actor_new()
             new_actors = record_normalizer.get_new_actors()
 
             # 把本地的今日新增的Actor更新到数据库
-            actors = [new_actors[actor] for actor in new_actors]
+            actors = new_actors.values()
             mongo_helper.insert_new_actors(actors)
 
             # 对新增的Actor, 改变Redis中相应的计数

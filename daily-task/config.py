@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import datetime
 
 
 # debug
@@ -30,7 +31,9 @@ redis_count_prefix = 'grcount'
 redis_info_prefix = 'grinfo'
 
 # 日志的位置
-log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log.txt')
+log_file_name = '.'.join(('log', datetime.datetime.now().strftime('%Y%m%d'), 'txt'))
+log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), log_file_name)
+
 
 # 数据保存的位置
 data_base = '/root/data'

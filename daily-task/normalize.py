@@ -255,5 +255,5 @@ class Normalizer(object):
     def get_new_actors(self):
         return self.new_actors
 
-    def get_record_actor_exist(self):
+    def get_record_actor_new(self):
         return self.records
