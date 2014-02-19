@@ -13,6 +13,7 @@ from pymongo import MongoClient
 import config
 import log
 import downloader
+import util
 from cleaner import Cleaner
 from group import Grouper
 from normalize import Normalizer
@@ -97,6 +98,9 @@ def main(p):
             # 将今日用户新增的val更新到数据库
             mongo_helper.update_val(val_actor_new)
             mongo_helper.update_val(val_actor_exist)
+
+    # 生成CSV文件
+    util.grcount2csv()
 
     end = time.time()
     log.log('total: %s s' % (end - start))

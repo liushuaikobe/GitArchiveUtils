@@ -8,6 +8,13 @@ a {
     color: #0088cc;
     text-decoration: none;
 }
+
+.position-middle {
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+}
+
 .index-foot {
     display: block;
     margin-top: 200px;

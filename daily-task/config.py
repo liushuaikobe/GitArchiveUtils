@@ -19,9 +19,9 @@ greenlet_num = 40
 
 # 解析地名相关
 result_num = 1 # 从服务器取回的结果条数
-username = 'liushuaikobe'
+username = 'lskobeqq'
 username_candidate_1 = 'lskobe'
-username_candidate_2 = 'lskobeqq'
+username_candidate_2 = 'liushuaikobe'
 
 # 缓存保存的位置
 redis_addr = '127.0.0.1'
@@ -38,13 +38,15 @@ log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), log_file_nam
 # 数据保存的位置
 data_base = '/root/data'
 # data_base = '/home/footoo/githubradar/data'
-# data_base = '/Users/liushuai/Downloads/data'
+# data_base = '/Users/liushuai/Downloads/gitradar/data'
 
 # location搜索索引保存位置
 ix_path = '/root/index'
+# ix_path = '/Users/liushuai/Downloads/gitradar/index'
 
 # 各个地区用户数量的CSV文件的位置
 csv_path = '/root'
+# csv_path = '/Users/liushuai/Downloads/gitradar'
 
 # 邮件相关
 mail_config = {

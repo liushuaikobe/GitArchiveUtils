@@ -18,7 +18,7 @@ from handlers.test import TestHandler
 
 parse_config_file('config.py')
 
-db = motor.MotorClient('162.243.37.124', 27017).open_sync().op_test
+db = motor.MotorClient(options.mongo_addr, options.mongo_port).open_sync().op_test
 gr_searcher = GRSearcher(options.whoosh_ix_path)
 
 handlers = [

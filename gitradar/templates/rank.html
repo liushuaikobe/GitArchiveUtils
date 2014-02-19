@@ -1,6 +1,7 @@
 {% extends "./base.html" %}
 
 {% block js %}
+<script src="{{ static_url("js/rank.js") }}"></script>
 {% end %}
 
 {% block content %}
@@ -8,10 +9,13 @@
     Ranking in {{ location }}: 
 </h3>
 
-<div class="ui very relaxed divided list">
+<div class="ui very relaxed divided list" id="rank-list">
     {% for actor in actors %}
         <div class="item">
             <div class="right floated tiny teal">{{ actor['val'] }}</div>
+            <div class="left floated">
+                {{ actor['index']}}
+            </div>
             <img class="ui avatar image" src="http://www.gravatar.com/avatar/{{ actor.get('gravatar_id', '') }}">
             <div class="content">
                 <a href="/report/{{ actor['login'] }}" class="header">{{ actor['login'] }}</a>
@@ -23,9 +27,17 @@
         </div>
     {% end %}
 </div>
+<div class="position-middle">
+    <div class="ui small button" id="load-more">
+        Load More
+    </div>
+</div>
 {% end %}
 
 {% block js_embed %}
 <script type="text/javascript">
+    set_last_user_val("{{ actors[-1]['val'] }}");
+    set_last_user_login("{{ actors[-1]['login'] }}");
+    set_last_user_index("{{ actors[-1]['index'] }}");
 </script>
 {% end %}

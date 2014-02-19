@@ -11,7 +11,6 @@ from whoosh.qparser import *
 import decorator
 import util
 from util import WhooshUtil
-from util import grcount2csv
 
 
 def foo(o):
@@ -137,7 +136,7 @@ def test19():
                 print r.fields()
 
 def test20():
-    grcount2csv()
+    util.grcount2csv()
 
 if __name__ == '__main__':
     test20()
