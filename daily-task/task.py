@@ -13,6 +13,7 @@ from pymongo import MongoClient
 import config
 import log
 import downloader
+import util
 from cleaner import Cleaner
 from group import Grouper
 from normalize import Normalizer
@@ -24,7 +25,7 @@ from evaluate import Evaluater
 client = MongoClient(config.db_addr, config.db_port)
 db = client[config.db]
 
-
+@profile
 def main(p):
     start = time.time()
 
@@ -71,11 +72,11 @@ def main(p):
             # 处理记录的actor不存在的记录
             record_normalizer.set_records(record_actor_new)
             record_normalizer.normalize()
-            record_actor_new = record_normalizer.get_record_actor_exist()
+            record_actor_new = record_normalizer.get_record_actor_new()
             new_actors = record_normalizer.get_new_actors()
 
             # 把本地的今日新增的Actor更新到数据库
-            actors = [new_actors[actor] for actor in new_actors]
+            actors = new_actors.values()
             mongo_helper.insert_new_actors(actors)
 
             # 对新增的Actor, 改变Redis中相应的计数
@@ -97,6 +98,17 @@ def main(p):
             # 将今日用户新增的val更新到数据库
             mongo_helper.update_val(val_actor_new)
             mongo_helper.update_val(val_actor_exist)
+
+            record_cleaner.free_mem()
+            del record_cleaner
+            del record_grouper
+            del record_normalizer
+            del mongo_helper
+            del counter
+            del evaluater
+
+    # 生成CSV文件
+    util.grcount2csv()
 
     end = time.time()
     log.log('total: %s s' % (end - start))

@@ -13,7 +13,6 @@ import util
 from util import WhooshUtil
 
 
-
 def foo(o):
     del o['a']
 
@@ -136,8 +135,8 @@ def test19():
             for r in results:
                 print r.fields()
 
-
+def test20():
+    util.grcount2csv()
 
 if __name__ == '__main__':
-    test18()
-    test19()
+    test20()

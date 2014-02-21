@@ -1,28 +1,155 @@
 {% extends "./base.html" %}
 
+{% block js %}
+<script src="{{ static_url("js/report.js") }}"></script>
+<script src="{{ static_url("js/highcharts.js") }}"></script>
+{% end %}
+
 {% block content %}
+<div class="ui piled segment">
+    <div class="cv">
 
-<h2><a href="https://github.com/{{ actor }}">{{ actor }}</a></h2>
-{% if result %}
-<ul>
-{% for r in result %}
-    <li>
-        Repo id: {{ int(r["repository.id"]) }}
-        <ul>
-        {% for c in r["contribution"] %}
-            <li>
-                <a href="{{ c["url"] }}">{{ c["name"] }}</a> ☆:{{ int(c["star"]) }} Y:{{ int(c["fork"]) }}
-                <ul>
-                    {% for t in c["payload"] %}
-                        <li>{{ t }} {{ int(c["payload"][t]) }}</li>
-                    {% end %}
-                </ul>
-            </li>
+    <!-- top bar (basic profile) -->
+    <div class="cv-top">
+        <img class="rounded ui image" src="http://www.gravatar.com/avatar/{{ actor['gravatar_id'] }}?s=140"></img>
+        <h2>
+            <a class="markedness" href="https://github.com/{{ actor['login'] }}">{{ actor['name'] }}</a></br>
+            <div class="description">{{ actor['login'] }}</br>
+            {% if actor.get('blog', '') %}
+            Website: <a href="{{ actor['blog'] }}">{{ actor['blog'] }}</a></br>
+            {% end %}
+            Based: {{ actor['location']['name'] }}, {{ actor['location']['countryName'] }}</div>
+        </h2>
+    </div>
+
+    <div class="ui clearing divider"></div>
+
+    <!-- report start -->
+
+    <!-- recently -->
+    <div class="ui ribbon label">Recently</div>
+    <p>
+    As far as we know, {{ actor['name'] }}
+    {% if len(recently_devoted_repos) > 0 %}
+        was devoted to the 
+        {% if len(recently_devoted_repos) == 1 %}
+        project 
+        {% else %}
+        projects
         {% end %}
+        {% for repo_id in recently_devoted_repos %}
+        <ul>
+            <li><a href="{{ recently_devoted_repos[repo_id]['url'] }}">
+                {{ recently_devoted_repos[repo_id]['owner'] }}/{{ recently_devoted_repos[repo_id]['name'] }}
+            </a></li> 
         </ul>
-    </li>       
-{% end %}
-</ul>
+        {% end %}
+        recently, of which 
+        <a href="{{ recently_devoted_repos[most_popular_repo_id]['url'] }}">
+            {{ recently_devoted_repos[most_popular_repo_id]['owner'] }}/{{ recently_devoted_repos[most_popular_repo_id]['name'] }}
+        </a> is the most popular one, it has 
+        {{ recently_devoted_repos[most_popular_repo_id]['stargazers'] }} stars and 
+        {{ recently_devoted_repos[most_popular_repo_id]['forks'] }} forks.
+    {% else %}
+        wasn't devoted to any projects of his/hers own recently.
+    {% end %}
+    </p>
+
+    <!-- open sourcing -->
+    <div class="ui ribbon label">Open Sourcing</div>
+    <p>
+    As for the open sourcing projects, being very
+    {% if event_total < 5  %}
+    average
+    {% elif event_total >=5 and event_total < 20 %}
+    enthusiastic
+    {% else %}
+    passionate
+    {% end %}
+    recently, 
+    
+    {{ actor['name'] }}
+    {% if len(recently_devoted_os_repos) == 0 %}
+    didn't contribute to any projects recently.
+    {% else %}
+        has contributed to the
+        {% if len(recently_devoted_os_repos) == 1 %}
+        project  
+        {% else  %}
+        projects
+        {% end %}
+        <ul>
+            {% for repo_id in recently_devoted_os_repos %}
+            <li><a href="{{ recently_devoted_os_repos[repo_id]['url'] }}">
+                {{ recently_devoted_os_repos[repo_id]['owner'] }}/{{ recently_devoted_os_repos[repo_id]['name'] }}
+            </a></li>
+            {% end %}
+        </ul>
+        recently,  of which 
+        <a href="{{ recently_devoted_os_repos[most_popular_os_repos_id]['url'] }}">
+            {{ recently_devoted_os_repos[most_popular_os_repos_id]['owner'] }}/{{ recently_devoted_os_repos[most_popular_os_repos_id]['name'] }}
+        </a> 
+        is the most famous one, it has 
+        {{ recently_devoted_os_repos[most_popular_os_repos_id]['stargazers'] }} stars and 
+        {{ recently_devoted_os_repos[most_popular_os_repos_id]['forks'] }} forks.
+        </p>
+        <p>
+        {{ actor['name'] }} has send 
+        {{ event_type_count['PullRequestEvent'] }} PullRequests, 
+        post {{ event_type_count['IssuesEvent'] }} issues 
+        and contributed {{ event_type_count['PushEvent'] }} commits.
+    {% end %}
+
+    </p>
+
+    <!-- Language -->
+    <div class="ui ribbon label">Skills</div>
+    <div id="language-pie"></div>
+
+    <!-- Famous repos -->
+    <div class="ui ribbon label">Popular Repos</div>
+    <p id="popular-repos-p"></p>
+    <div id="popular-repos-list" class="ui list"></div>
+
+    <!-- Organizations --> 
+    <div class="ui ribbon label">Orgs</div>
+    <p id="orgs-p"></p>
+    <div id="orgs-items" class="ui items"></div>
+
+
+    <!-- Debug -->
+    {% if debug %}
+    {% if result %}
+    <ul>
+    {% for r in result %}
+        <li>
+            Repo id: {{ int(r["repository.id"]) }}
+            <ul>
+            {% for c in r["contribution"] %}
+                <li>
+                    <a href="{{ c["url"] }}">{{ c["name"] }}</a> ☆:{{ int(c["star"]) }} Y:{{ int(c["fork"]) }}
+                    <ul>
+                        {% for t in c["payload"] %}
+                            <li>{{ t }} {{ int(c["payload"][t]) }}</li>
+                        {% end %}
+                    </ul>
+                </li>
+            {% end %}
+            </ul>
+        </li>       
+    {% end %}
+    </ul>
+    {% end %}
+    {% end %}
+    </div>
+</div>
+
 {% end %}
 
+{% block js_embed %}
+<script type="text/javascript">
+    set_login("{{ actor['login'] }}");
+    set_pie_div("language-pie");
+    main();
+</script>
 {% end %}

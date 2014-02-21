@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
-import motor
-import tornadoredis
-
 from tornado.web import RequestHandler
 from tornado.web import asynchronous
 from tornado import gen
+import motor
+import tornadoredis
+from whoosh.fields import *
+from whoosh.qparser import *
 
 
-c = tornadoredis.Client(host='162.243.37.124', port=6379)
-c.connect()
+# c = tornadoredis.Client(host='162.243.37.124', port=6379)
+# c.connect()
 
 class IndexHandler(RequestHandler):
-    @asynchronous
-    @gen.coroutine
+    #@asynchronous
+    #@gen.coroutine
     def get(self):
         # keys = yield gen.Task(c.keys, pattern='grcount:San Fran*:lng')
         # locations = []
@@ -30,12 +31,6 @@ class IndexHandler(RequestHandler):
 
         self.render('index.html', actors=None)
 
-    @asynchronous
-    @gen.coroutine
     def post(self):
-        q = self.get_argument('location')
-        cursor = self.settings['db'].actor.find({'location.name': q}).sort([('val', -1)])
-        actors = []
-        while (yield cursor.fetch_next):
-            actors.append(cursor.next_object())
-        self.render('index.html', actors=actors)
+        location = self.get_argument('location')
+        return self.redirect('/search/%s' % location)

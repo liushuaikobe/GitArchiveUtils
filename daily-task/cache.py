@@ -79,7 +79,7 @@ class LocationCache(Cache):
         """将缓存的命中情况更新到数据库
         因为是每天的任务，故用当天的日期作为中缀，并采取累加的方式来计数
         """
-        infix = datetime.datetime.now().strftime("%Y%m%d")
+        infix = datetime.datetime.now().strftime('%Y%m%d')
         self.counter.inc_n(infix, 'search', self.search_count, execute_right_now=False)
         self.counter.inc_n(infix, 'hit', self.hit_count, execute_right_now=False)
         self.counter.execute()
