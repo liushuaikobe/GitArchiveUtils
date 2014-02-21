@@ -39,3 +39,6 @@ class Cleaner(object):
     def get_clean_data(self):
         return self.clean_data
 
+    def free_mem(self):
+        del self.clean_data
+

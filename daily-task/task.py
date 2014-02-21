@@ -25,7 +25,7 @@ from evaluate import Evaluater
 client = MongoClient(config.db_addr, config.db_port)
 db = client[config.db]
 
-
+@profile
 def main(p):
     start = time.time()
 
@@ -98,6 +98,14 @@ def main(p):
             # 将今日用户新增的val更新到数据库
             mongo_helper.update_val(val_actor_new)
             mongo_helper.update_val(val_actor_exist)
+
+            record_cleaner.free_mem()
+            del record_cleaner
+            del record_grouper
+            del record_normalizer
+            del mongo_helper
+            del counter
+            del evaluater
 
     # 生成CSV文件
     util.grcount2csv()

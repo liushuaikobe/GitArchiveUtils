@@ -160,7 +160,7 @@ class Normalizer(object):
                 self.process_trick_actor(self.webservice_cache[location])
 
     def invoke_webservice_task(self, locations, final=False):
-        """利用Python的协程技术将locations中的地名通过Web Sservice得到其规范化的信息，
+        """利用Python的协程技术将locations中的地名通过Web Service得到其规范化的信息，
         将结果存入实例变量self.webservice_result中
         """
         greenlets = [gevent.spawn(self.search, l) for l in locations]
@@ -168,9 +168,9 @@ class Normalizer(object):
 
         should_change_uname = False
 
-        for greenlet in greenlets:
-            arg = greenlet.value[0] # arg为传进该greenlet的参数(待规范化的location)
-            result = greenlet.value[1]
+        for i, greenlet in enumerate(greenlets):
+            arg = locations[i] # arg为传进该greenlet的参数(待规范化的location)
+            result = -1 if greenlet.exception else greenlet.value
 
             if result == -2: # 出现了rate limit的错误
                 should_change_uname = True
@@ -203,14 +203,14 @@ class Normalizer(object):
         try:
             r = requests.get('http://api.geonames.org/searchJSON', params=params, timeout=10) # timeout = 10s
         except ConnectionError, e: # Connection reset by peer
-            log.log('ConnectionError=。=: %s' % str(e), log.ERROR)
-            return location, -1
+            log.log('ConnectionError=。=: %s | %s' % (str(e), location), log.ERROR)
+            return
         except Timeout, e: # 网速慢等原因导致的超时
-            log.log('Requests Timeout=。=: %s' % str(e), log.ERROR)
-            return location, -1
+            log.log('Requests Timeout=。=: %s | %s' % (str(e), location), log.ERROR)
+            return
         except RequestException, e:
-            log.log('RequestException=。=: %s' % str(e), log.ERROR)
-            return location, -1 # 第二个返回值是-1表示该greenlet异常
+            log.log('RequestException=。=: %s | %s' % (str(e), location), log.ERROR)
+            return
 
         # 将回复的信息转化成字典
         # log.log(r.text, log.DEBUG)
@@ -218,8 +218,8 @@ class Normalizer(object):
 
         # 判断Geonames的API是否已经超出限制 http://goo.gl/0ApBfL
         if response.get('status', {}).get('value', -1) in (18, 19, 20):
-            log.log('Fire! %s' % response, log.WARNING)
-            return location, -2 # 第二个返回值是-2表示需要更换geo的用户名（相当于也未正确执行）
+            log.log('Fire! %s | %s' % (response, location), log.WARNING)
+            return -2 # 第二个返回值是-2表示需要更换geo的用户名（相当于也未正确执行）
 
         try:
             e = response['geonames'][0]
@@ -233,7 +233,7 @@ class Normalizer(object):
             }
         except (KeyError, IndexError):
             regular_location = None
-        return location, regular_location
+        return regular_location
 
     @decorator._log('Normalizing...', 'Normalizing finished.')
     def normalize(self):

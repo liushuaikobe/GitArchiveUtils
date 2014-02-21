@@ -4,7 +4,7 @@ import datetime
 
 
 # debug
-debug = False
+debug = True
 
 # 能被称之为贡献的记录类型
 contribution_type = ('IssuesEvent', 'PullRequestEvent', 'PushEvent')
@@ -19,9 +19,9 @@ greenlet_num = 40
 
 # 解析地名相关
 result_num = 1 # 从服务器取回的结果条数
-username = 'lskobeqq'
+username = 'liushuaikobe'
 username_candidate_1 = 'lskobe'
-username_candidate_2 = 'liushuaikobe'
+username_candidate_2 = 'lskobeqq'
 
 # 缓存保存的位置
 redis_addr = '127.0.0.1'
