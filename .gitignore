@@ -2,8 +2,9 @@
 .DS_Store
 log*.txt
 */ix/*
-*.csv
 *.swp
+.idea/*
+*.csv
 
 # C extensions
 *.so

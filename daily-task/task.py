@@ -5,9 +5,9 @@ monkey.patch_all()
 import gzip
 import sys
 import os
+import gc
 import time
 
-import gevent
 from pymongo import MongoClient
 
 import config
@@ -99,13 +99,16 @@ def main(p):
             mongo_helper.update_val(val_actor_new)
             mongo_helper.update_val(val_actor_exist)
 
-            record_cleaner.free_mem()
-            del record_cleaner
-            del record_grouper
-            del record_normalizer
-            del mongo_helper
-            del counter
-            del evaluater
+            record_cleaner = None
+            record_grouper = None
+            record_normalizer = None
+            mongo_helper = None
+            counter = None
+            evaluater = None
+
+            f.close()
+
+            gc.collect()
 
     # 生成CSV文件
     util.grcount2csv()

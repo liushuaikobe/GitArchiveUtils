@@ -18,7 +18,7 @@ db = 'op_test'
 greenlet_num = 40
 
 # 解析地名相关
-result_num = 1 # 从服务器取回的结果条数
+result_num = 1  # 从服务器取回的结果条数
 username = 'liushuaikobe'
 username_candidate_1 = 'lskobe'
 username_candidate_2 = 'lskobeqq'

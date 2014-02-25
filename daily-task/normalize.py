@@ -2,7 +2,6 @@
 from gevent import monkey
 monkey.patch_all()
 
-import time
 
 import gevent
 import requests
@@ -12,7 +11,6 @@ from requests.exceptions import RequestException, ConnectionError, Timeout
 import config
 import log
 import decorator
-import database
 import util
 from util import WhooshUtil
 from cache import LocationCache
@@ -24,20 +22,20 @@ class Normalizer(object):
     """
     def __init__(self, db):
         self.db = db
-        self.records = [] # 待处理的一坨记录
-        self.new_actors = {} # 今日新增的用户和他们的规范化信息
+        self.records = []  # 待处理的一坨记录
+        self.new_actors = {}  # 今日新增的用户和他们的规范化信息
 
-        self.greenlet_num = config.greenlet_num # 并发数量
-        self.cache = LocationCache() # 地名缓存对象
-        self.webservice_cache = {}  # 对记录按着地名归档后的结果，{'Hangzhou': [1, 2, 3], 'BeiJing': [5, 7, 8]}
+        self.greenlet_num = config.greenlet_num  # 并发数量
+        self.cache = LocationCache()  # 地名缓存对象
+        self.webservice_cache = {}   # 对记录按着地名归档后的结果，{'Hangzhou': [1, 2, 3], 'BeiJing': [5, 7, 8]}
 
-        self.username = config.username # 当前Geonames的用户名
+        self.username = config.username  # 当前Geonames的用户名
 
-        self.trick_record_indices = [] # 地名信息规范化没有结果的记录的下标
+        self.trick_record_indices = []  # 地名信息规范化没有结果的记录的下标
 
-        self.webservice_result = {} #  规范化结果
+        self.webservice_result = {}  # 规范化结果
 
-        self.failed_locations = set([]) # 调用Web Service失败的location
+        self.failed_locations = set([])  # 调用Web Service失败的location
 
         self.whoosh_util = WhooshUtil()
 
@@ -62,7 +60,7 @@ class Normalizer(object):
             actor = r['actor']
             attrs = r['actor_attributes']
             attrs['location'] = regular_location
-            self.new_actors[actor] = attrs # 因为用字典保存，因此直接做更新即可，后面重复的自动覆盖
+            self.new_actors[actor] = attrs  # 因为用字典保存，因此直接做更新即可，后面重复的自动覆盖
             del self.records[i]['actor_attributes']
 
     def clean_trick_records(self):
@@ -77,7 +75,7 @@ class Normalizer(object):
         # 首先，对所有记录尝试从缓存中进行规范化
         log.log('Try to Normalize from cache...%s total in webservice_cache.' % len(self.webservice_cache))
 
-        cached_location = set([]) # 在缓存中找到的location
+        cached_location = set([])  # 在缓存中找到的location
 
         for location in self.webservice_cache:
             regular_location = self.cache.get_location(location)
@@ -146,14 +144,14 @@ class Normalizer(object):
             try:
                 regular_location = self.webservice_result[location]
                 try:
-                    if regular_location == None:
+                    if regular_location is None:
                         self.process_trick_actor(self.webservice_cache[location])
                     else:
                         self.process_good_actor(self.webservice_cache[location], regular_location)
-                except KeyError:
+                except KeyError, e:
                     log.log('Hope this will never happen.', log.ERROR)
                     raise e
-            except KeyError: # 出现了KeyError说明，该location由于某种异常未能正确解析出结果
+            except KeyError:  # 出现了KeyError说明，该location由于某种异常未能正确解析出结果
                 assert(location in self.failed_locations) # 那么可以断言，该location一定在self.failed_locations中
                 # 由于未能解析出结果的location对应的记录已经被插入到异常数据库
                 log.log('Get KeyError!', log.ERROR)
@@ -169,20 +167,20 @@ class Normalizer(object):
         should_change_uname = False
 
         for i, greenlet in enumerate(greenlets):
-            arg = locations[i] # arg为传进该greenlet的参数(待规范化的location)
+            arg = locations[i]  # arg为传进该greenlet的参数(待规范化的location)
             result = -1 if greenlet.exception else greenlet.value
 
-            if result == -2: # 出现了rate limit的错误
+            if result == -2:  # 出现了rate limit的错误
                 should_change_uname = True
                 greenlet_success = False
-            elif result == -1: # 该greenlet未正常执行
+            elif result == -1:  # 该greenlet未正常执行
                 greenlet_success = False
-            else: # 该greenlet正常得到了结果
+            else:  # 该greenlet正常得到了结果
                 self.webservice_result[arg] = result
                 greenlet_success = True
 
             if not greenlet_success:
-                if final: # 如果final参数被置为True，则出异常后直接将异常location在self.webservice_cache对应的记录插入到数据库中
+                if final:  # 如果final参数被置为True，则出异常后直接将异常location在self.webservice_cache对应的记录插入到数据库中
                     exception_records = [self.records[i] for i in self.webservice_cache[arg]]
                     self.db.exception.insert(exception_records)
                     util.sendmail('Exception', '%s records did not be handled right.' % len(exception_records))
@@ -201,11 +199,11 @@ class Normalizer(object):
         params = {'maxRows': config.result_num, 'username': self.username, 'q': location}
 
         try:
-            r = requests.get('http://api.geonames.org/searchJSON', params=params, timeout=10) # timeout = 10s
-        except ConnectionError, e: # Connection reset by peer
+            r = requests.get('http://api.geonames.org/searchJSON', params=params, timeout=10)  # timeout = 10s
+        except ConnectionError, e:  # Connection reset by peer
             log.log('ConnectionError=。=: %s | %s' % (str(e), location), log.ERROR)
             return
-        except Timeout, e: # 网速慢等原因导致的超时
+        except Timeout, e:  # 网速慢等原因导致的超时
             log.log('Requests Timeout=。=: %s | %s' % (str(e), location), log.ERROR)
             return
         except RequestException, e:
@@ -219,7 +217,7 @@ class Normalizer(object):
         # 判断Geonames的API是否已经超出限制 http://goo.gl/0ApBfL
         if response.get('status', {}).get('value', -1) in (18, 19, 20):
             log.log('Fire! %s | %s' % (response, location), log.WARNING)
-            return -2 # 第二个返回值是-2表示需要更换geo的用户名（相当于也未正确执行）
+            return -2  # 第二个返回值是-2表示需要更换geo的用户名（相当于也未正确执行）
 
         try:
             e = response['geonames'][0]

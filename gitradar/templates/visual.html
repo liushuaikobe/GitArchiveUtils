@@ -2,8 +2,15 @@
 
 {% block js %}
 <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
-<link href='//api.tiles.mapbox.com/mapbox.js/v1.6.1/mapbox.css' rel='stylesheet' />
-<script src='//api.tiles.mapbox.com/mapbox.js/v1.6.1/mapbox.js'></script>
+<!-- MapBox Lib -->
+<link href='http://api.tiles.mapbox.com/mapbox.js/v1.6.1/mapbox.css' rel='stylesheet' />
+<script src='http://api.tiles.mapbox.com/mapbox.js/v1.6.1/mapbox.js'></script>
+<!-- Leaflet Marker Cluster Lib -->
+<script src="http://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js" ></script>
+<link href='http://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css' rel='stylesheet' />
+<link href='http://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css' rel='stylesheet' />
+<script src=""></script>
+
 <script src="{{ static_url("js/csv2geojson.js") }}"></script>
 {% end %}
 
@@ -14,13 +21,25 @@
 
 {% block js_embed %}
 <script type="text/javascript">
-    var map = L.mapbox.map('map', 'liushuaikobe.h31efaje');
-    var markerLayer = L.mapbox.markerLayer().addTo(map);
-    $.ajax({
-            url: '{{static_url("grcount.csv")}}',
-            success: function csvLoad(csv) {
-                markerLayer.setGeoJSON(csv2geojson.csv2geojson(csv));
+var map = L.mapbox.map('map', 'liushuaikobe.h31efaje');
+
+var markers = L.markerClusterGroup();
+
+$.ajax({
+    url: '{{static_url("grcount.csv")}}',
+    success: function csvLoad(csv) {
+        console.log(csv2geojson.csv2geojson(csv));
+        var geoJsonLayer = L.geoJson(csv2geojson.csv2geojson(csv), {
+            onEachFeature: function (feature, layer) {
+                var popupHtml = feature.properties.title + ", "
+                        + feature.properties.country + "</br>" + feature.properties.count + " Githubber(s)";
+                layer.bindPopup(popupHtml);
             }
-    });
+        });
+        markers.addLayer(geoJsonLayer);
+        map.addLayer(markers);
+//                map.fitBounds(markers.getBounds());
+    }
+});
 </script>
 {% end %}
