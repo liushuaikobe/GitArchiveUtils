@@ -25,7 +25,7 @@ from evaluate import Evaluater
 client = MongoClient(config.db_addr, config.db_port)
 db = client[config.db]
 
-@profile
+
 def main(p):
     start = time.time()
 
@@ -99,12 +99,14 @@ def main(p):
             mongo_helper.update_val(val_actor_new)
             mongo_helper.update_val(val_actor_exist)
 
-            record_cleaner = None
-            record_grouper = None
-            record_normalizer = None
-            mongo_helper = None
-            counter = None
-            evaluater = None
+            record_cleaner.free_mem()
+
+            del record_cleaner
+            del record_grouper
+            del record_normalizer
+            del mongo_helper
+            del counter
+            del evaluater
 
             f.close()
 
