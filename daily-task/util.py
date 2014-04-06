@@ -14,11 +14,11 @@ from database import get_redis_pipeline
 
 mail_config = config.mail_config
 
-def sendmail(sbj, content, 
-    fromwhom=mail_config['from'], towhom=mail_config['to'], 
+def sendmail(sbj, content,
+    fromwhom=mail_config['from'], towhom=mail_config['to'],
     server=mail_config['server'], username=mail_config['username'], pwd=mail_config['pwd']):
     try:
-        msg = msg.encode('utf-8')
+        content = content.encode('utf-8')
     except Exception, e:
         pass
     msg = MIMEText(content)
@@ -47,7 +47,8 @@ class WhooshUtil(object):
         super(WhooshUtil, self).__init__()
         self.ix_path = ix_path
         self.schema = Schema(location=TEXT(stored=True), rlocation=TEXT(stored=True))
-        
+        self.writer = None
+
     def build_whoosh_index(self):
         """建立location的Whoosh搜索索引"""
         if not os.path.exists(self.ix_path):
@@ -65,7 +66,7 @@ class WhooshUtil(object):
 
     def commit(self):
         self.writer.commit()
-        
+
 
 def grcount2csv(output_path=config.csv_path):
     """把grcount的信息转化成CSV文件，以便在前端展示"""
@@ -82,7 +83,7 @@ def grcount2csv(output_path=config.csv_path):
             prefix, location_and_counttry, item = key.split(':')
 
             title, country = location_and_counttry.split('@')
-        
+
             pipe.get(':'.join((prefix, location_and_counttry, 'lat')))
             pipe.get(':'.join((prefix, location_and_counttry, 'lng')))
             pipe.get(':'.join((prefix, location_and_counttry, 'count')))
@@ -90,4 +91,3 @@ def grcount2csv(output_path=config.csv_path):
             lat, lng, count = pipe.execute()
 
             csv_writer.writerow([title, country, count, lat, lng])
-

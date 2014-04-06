@@ -64,4 +64,3 @@ class RankHandler(RequestHandler):
             for i, actor in enumerate(actors):
                 actor['index'] = int(since_index) + i + 1
             self.write(ujson.dumps(actors))
-        

@@ -17,7 +17,7 @@ class GRSearcher(object):
         self.ix = open_dir(index_dir)
         self.search_on = 'location'
         self.parser = QueryParser(self.search_on, self.ix.schema)
-        
+
     def search(self, search_txt):
         with self.ix.searcher() as searcher:
             q = self.parser.parse(search_txt)

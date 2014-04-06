@@ -9,6 +9,3 @@ class SearchHandler(RequestHandler):
         searcher = self.settings['searcher']
         clocations, locations, rlocations = searcher.search(location)
         self.render('search_result.html', clocations=clocations, locations=locations, rlocations=rlocations)
-
-
-

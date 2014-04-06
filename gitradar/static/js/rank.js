@@ -11,7 +11,7 @@ function set_last_user_login(last_user_login) {
     current_last_user_login = last_user_login;
 }
 
-function set_last_user_index(last_user_index) { 
+function set_last_user_index(last_user_index) {
     current_last_user_index = last_user_index;
 }
 
@@ -20,7 +20,7 @@ function append_rank_list(html) {
 }
 
 function load_rank(last_val, last_login, last_index, num) {
-    var item_template = 
+    var item_template =
         '<div class="item"> \
             <div class="right floated tiny teal">{{ val }}</div> \
             <div class="left floated"> \
@@ -39,7 +39,7 @@ function load_rank(last_val, last_login, last_index, num) {
         "since_index": (last_index ? last_index : null),
         "num": num
     };
-    $.getJSON(url, data,  
+    $.getJSON(url, data,
         function(actor_list){
             $.each(actor_list, function(i, actor){
                 var item = item_template.replace(/{{ (\w*) }}/g, function(m, key){

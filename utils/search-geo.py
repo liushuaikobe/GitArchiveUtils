@@ -5,7 +5,7 @@ import simplejson
 def search(q):
     params = {'q':q, 'maxRows':10, 'username':'liushuaikobe'}
     r = requests.get('http://api.geonames.org/searchJSON', params=params)
-    # print r.url
+    print r.url
     for e in simplejson.loads(r.text)['geonames']:
         for i in e:
             print i, '=>', e[i]
